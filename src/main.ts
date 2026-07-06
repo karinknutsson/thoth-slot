@@ -1,5 +1,6 @@
 import "./style.css";
 import { LoadingView } from "./views/LoadingView";
+import { GameView } from "./views/GameView";
 import { Application, Assets, Container, Sprite, Ticker } from "pixi.js";
 
 async function createApp(): Promise<void> {
@@ -12,21 +13,40 @@ async function createApp(): Promise<void> {
   // Append the application canvas to the document body
   document.body.appendChild(app.canvas);
 
+  // Start loading the game assets in the background right away
+  const assetsPromise = LoadingView.loadAssets();
+
   // Create and add the loading view to the stage
   const loadingView = await LoadingView.create();
   app.stage.addChild(loadingView);
 
   // Simulate loading progress
-  let progress = 0;
-  const loadingInterval = setInterval(() => {
-    progress += 0.001;
-    loadingView["setProgress"](progress);
-    if (progress >= 1) {
-      clearInterval(loadingInterval);
-      // Remove the loading view after loading is complete
-      app.stage.removeChild(loadingView);
-    }
-  }, 50);
+  const fakeProgressPromise = new Promise<void>((resolve) => {
+    let progress = 0;
+
+    const loadingInterval = setInterval(() => {
+      progress += 0.01;
+      loadingView.setProgress(progress);
+
+      if (progress >= 1) {
+        clearInterval(loadingInterval);
+        resolve();
+      }
+    }, 50);
+  });
+
+  // Wait for both the fake progress bar and the real assets to finish
+  const [backgroundTexture] = await Promise.all([
+    assetsPromise,
+    fakeProgressPromise,
+  ]);
+
+  // Remove the loading view now that loading is complete
+  app.stage.removeChild(loadingView);
+
+  // Create and add the game view to the stage
+  const gameView = new GameView(backgroundTexture);
+  app.stage.addChild(gameView);
 
   // Create and add a container to the stage
   // const container = new Container();

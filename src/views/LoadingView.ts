@@ -61,7 +61,13 @@ export class LoadingView extends Container {
     return new LoadingView(logoTexture);
   }
 
-  private setProgress(ratio: number): void {
+  static async loadAssets(
+    onProgress?: (progress: number) => void,
+  ): Promise<Texture> {
+    return Assets.load("/assets/background.jpg", onProgress);
+  }
+
+  setProgress(ratio: number): void {
     const clamped = Math.max(0, Math.min(1, ratio));
     this.barFill
       .clear()
