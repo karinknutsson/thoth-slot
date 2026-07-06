@@ -10,6 +10,7 @@ export class LoadingView extends Container {
   private static readonly BAR_WIDTH_DESKTOP = 320;
   private static readonly BAR_HEIGHT_DESKTOP = 20;
   private static readonly SYMBOL_COUNT = 16;
+  private static readonly MUSIC_PATH = "/assets/music/egypt-desert-music.mp3";
 
   private barWidth = LoadingView.BAR_WIDTH_DESKTOP;
   private barHeight = LoadingView.BAR_HEIGHT_DESKTOP;
@@ -62,24 +63,51 @@ export class LoadingView extends Container {
     return new LoadingView(logoTexture);
   }
 
-  static async loadAssets(
-    onProgress?: (progress: number) => void,
-  ): Promise<{ background: Texture; symbols: Texture[] }> {
-    const backgroundPath = "/assets/background.jpg";
+  static async loadAssets(onProgress?: (progress: number) => void): Promise<{
+    pageBackground: Texture;
+    gameBackground: Texture;
+    symbols: Texture[];
+    music: HTMLAudioElement;
+  }> {
+    const pageBackgroundPath =
+      "/assets/background-images/page-background.jpg";
+    const gameBackgroundPath =
+      "/assets/background-images/game-background.png";
     const symbolPaths = Array.from(
       { length: LoadingView.SYMBOL_COUNT },
       (_, i) => `/assets/symbols/${String(i + 1).padStart(2, "0")}.png`,
     );
 
-    const textures = await Assets.load(
-      [backgroundPath, ...symbolPaths],
-      onProgress,
-    );
+    const [textures, music] = await Promise.all([
+      Assets.load(
+        [pageBackgroundPath, gameBackgroundPath, ...symbolPaths],
+        onProgress,
+      ),
+      LoadingView.loadMusic(),
+    ]);
 
     return {
-      background: textures[backgroundPath],
+      pageBackground: textures[pageBackgroundPath],
+      gameBackground: textures[gameBackgroundPath],
       symbols: symbolPaths.map((path) => textures[path]),
+      music,
     };
+  }
+
+  private static loadMusic(): Promise<HTMLAudioElement> {
+    return new Promise((resolve, reject) => {
+      const audio = new Audio(LoadingView.MUSIC_PATH);
+      audio.loop = true;
+      audio.addEventListener("canplaythrough", () => resolve(audio), {
+        once: true,
+      });
+      audio.addEventListener(
+        "error",
+        () => reject(new Error(`Failed to load music: ${LoadingView.MUSIC_PATH}`)),
+        { once: true },
+      );
+      audio.load();
+    });
   }
 
   setProgress(ratio: number): void {

@@ -1,7 +1,7 @@
 import "./style.css";
 import { LoadingView } from "./views/LoadingView";
 import { GameView } from "./views/GameView";
-import { Application, Assets, Container, Sprite, Ticker } from "pixi.js";
+import { Application } from "pixi.js";
 
 async function createApp(): Promise<void> {
   // Create a new application
@@ -36,47 +36,28 @@ async function createApp(): Promise<void> {
   });
 
   // Wait for both the fake progress bar and the real assets to finish
-  const [{ background: backgroundTexture, symbols: symbolTextures }] =
-    await Promise.all([assetsPromise, fakeProgressPromise]);
+  const [
+    {
+      pageBackground: pageBackgroundTexture,
+      gameBackground: gameBackgroundTexture,
+      symbols: symbolTextures,
+      music,
+    },
+  ] = await Promise.all([assetsPromise, fakeProgressPromise]);
 
   // Remove the loading view now that loading is complete
   app.stage.removeChild(loadingView);
 
   // Create and add the game view to the stage
-  const gameView = new GameView(backgroundTexture, symbolTextures);
+  const gameView = new GameView(
+    pageBackgroundTexture,
+    gameBackgroundTexture,
+    symbolTextures,
+  );
   app.stage.addChild(gameView);
 
-  // Create and add a container to the stage
-  // const container = new Container();
-
-  // app.stage.addChild(container);
-
-  // // Load the bunny texture
-  // const texture = await Assets.load("https://pixijs.com/assets/bunny.png");
-
-  // // Create a 5x5 grid of bunnies in the container
-  // for (let i = 0; i < 25; i++) {
-  //   const bunny = new Sprite(texture);
-
-  //   bunny.x = (i % 5) * 40;
-  //   bunny.y = Math.floor(i / 5) * 40;
-  //   container.addChild(bunny);
-  // }
-
-  // // Move the container to the center
-  // container.x = app.screen.width / 2;
-  // container.y = app.screen.height / 2;
-
-  // // Center the bunny sprites in local container coordinates
-  // container.pivot.x = container.width / 2;
-  // container.pivot.y = container.height / 2;
-
-  // // Listen for animate update
-  // app.ticker.add((time: Ticker) => {
-  //   // Continuously rotate the container!
-  //   // * use delta to create frame-independent transform *
-  //   container.rotation -= 0.01 * time.deltaTime;
-  // });
+  // Start the background music now that the game view is showing
+  music.play().catch(() => {});
 }
 
 await createApp();
