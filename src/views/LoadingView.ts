@@ -9,6 +9,7 @@ export class LoadingView extends Container {
   private static readonly BAR_HEIGHT_MOBILE = 12;
   private static readonly BAR_WIDTH_DESKTOP = 320;
   private static readonly BAR_HEIGHT_DESKTOP = 20;
+  private static readonly SYMBOL_COUNT = 16;
 
   private barWidth = LoadingView.BAR_WIDTH_DESKTOP;
   private barHeight = LoadingView.BAR_HEIGHT_DESKTOP;
@@ -63,8 +64,22 @@ export class LoadingView extends Container {
 
   static async loadAssets(
     onProgress?: (progress: number) => void,
-  ): Promise<Texture> {
-    return Assets.load("/assets/background.jpg", onProgress);
+  ): Promise<{ background: Texture; symbols: Texture[] }> {
+    const backgroundPath = "/assets/background.jpg";
+    const symbolPaths = Array.from(
+      { length: LoadingView.SYMBOL_COUNT },
+      (_, i) => `/assets/symbols/${String(i + 1).padStart(2, "0")}.png`,
+    );
+
+    const textures = await Assets.load(
+      [backgroundPath, ...symbolPaths],
+      onProgress,
+    );
+
+    return {
+      background: textures[backgroundPath],
+      symbols: symbolPaths.map((path) => textures[path]),
+    };
   }
 
   setProgress(ratio: number): void {
@@ -161,7 +176,7 @@ export class LoadingView extends Container {
 
       const totalHeight =
         this.titleLabel.height +
-        spacing +
+        spacing * 2 +
         this.barHeight +
         spacing +
         this.loadingLabel.height;
@@ -172,7 +187,7 @@ export class LoadingView extends Container {
         rightCenterX,
         currentY + this.titleLabel.height / 2,
       );
-      currentY += this.titleLabel.height + spacing;
+      currentY += this.titleLabel.height + spacing * 2;
 
       this.setBarPosition(rightCenterX, currentY + this.barHeight / 2);
       currentY += this.barHeight + spacing;

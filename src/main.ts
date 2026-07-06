@@ -32,20 +32,18 @@ async function createApp(): Promise<void> {
         clearInterval(loadingInterval);
         resolve();
       }
-    }, 500);
+    }, 50);
   });
 
   // Wait for both the fake progress bar and the real assets to finish
-  const [backgroundTexture] = await Promise.all([
-    assetsPromise,
-    fakeProgressPromise,
-  ]);
+  const [{ background: backgroundTexture, symbols: symbolTextures }] =
+    await Promise.all([assetsPromise, fakeProgressPromise]);
 
   // Remove the loading view now that loading is complete
   app.stage.removeChild(loadingView);
 
   // Create and add the game view to the stage
-  const gameView = new GameView(backgroundTexture);
+  const gameView = new GameView(backgroundTexture, symbolTextures);
   app.stage.addChild(gameView);
 
   // Create and add a container to the stage
