@@ -22,7 +22,7 @@ async function createApp(): Promise<void> {
 
   // Simulate loading progress
   const fakeProgressPromise = new Promise<void>((resolve) => {
-    let progress = 0;
+    let progress = 0.02;
 
     const loadingInterval = setInterval(() => {
       progress += 0.01;
@@ -37,12 +37,7 @@ async function createApp(): Promise<void> {
 
   // Wait for both the fake progress bar and the real assets to finish
   const [
-    {
-      pageBackground: pageBackgroundTexture,
-      gameBackground: gameBackgroundTexture,
-      symbols: symbolTextures,
-      music,
-    },
+    { gameBackground: gameBackgroundTexture, symbols: symbolTextures, music },
   ] = await Promise.all([assetsPromise, fakeProgressPromise]);
 
   // Remove the loading view now that loading is complete
@@ -50,14 +45,34 @@ async function createApp(): Promise<void> {
 
   // Create and add the game view to the stage
   const gameView = new GameView(
-    pageBackgroundTexture,
+    loadingView.pageBackgroundTexture,
     gameBackgroundTexture,
     symbolTextures,
   );
   app.stage.addChild(gameView);
 
-  // Start the background music now that the game view is showing
-  music.play().catch(() => {});
+  // Start the background music now that the game view is showing.
+  // Browsers block audio autoplay without a prior user gesture, so fall
+  // back to starting it on the first interaction if that happens.
+  music.play().catch((error) => {
+    console.warn("Music autoplay was blocked, waiting for user input:", error);
+
+    const startMusic = () => {
+      music.play().catch((retryError) => {
+        console.warn(
+          "Music still failed to play after user input:",
+          retryError,
+        );
+      });
+    };
+
+    for (const eventName of ["pointerdown", "keydown", "touchstart"]) {
+      document.addEventListener(eventName, startMusic, {
+        once: true,
+        capture: true,
+      });
+    }
+  });
 }
 
 await createApp();
