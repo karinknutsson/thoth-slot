@@ -32,7 +32,7 @@ async function createApp(): Promise<void> {
         clearInterval(loadingInterval);
         resolve();
       }
-    }, 50);
+    }, 500);
   });
 
   // Wait for both the fake progress bar and the real assets to finish
