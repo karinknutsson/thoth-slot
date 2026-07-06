@@ -37,7 +37,12 @@ async function createApp(): Promise<void> {
 
   // Wait for both the fake progress bar and the real assets to finish
   const [
-    { gameBackground: gameBackgroundTexture, symbols: symbolTextures, music },
+    {
+      gameBackground: gameBackgroundTexture,
+      symbols: symbolTextures,
+      symbolBackground: symbolBackgroundTexture,
+      music,
+    },
   ] = await Promise.all([assetsPromise, fakeProgressPromise]);
 
   // Remove the loading view now that loading is complete
@@ -48,6 +53,7 @@ async function createApp(): Promise<void> {
     loadingView.pageBackgroundTexture,
     gameBackgroundTexture,
     symbolTextures,
+    symbolBackgroundTexture,
   );
   app.stage.addChild(gameView);
 

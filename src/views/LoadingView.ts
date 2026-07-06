@@ -77,22 +77,28 @@ export class LoadingView extends Container {
   static async loadAssets(onProgress?: (progress: number) => void): Promise<{
     gameBackground: Texture;
     symbols: Texture[];
+    symbolBackground: Texture;
     music: HTMLAudioElement;
   }> {
     const gameBackgroundPath = "/assets/images/game-background.png";
+    const symbolBackgroundPath = "/assets/images/squircle-yellow.svg";
     const symbolPaths = Array.from(
       { length: LoadingView.SYMBOL_COUNT },
       (_, i) => `/assets/symbols/${String(i + 1).padStart(2, "0")}.png`,
     );
 
     const [textures, music] = await Promise.all([
-      Assets.load([gameBackgroundPath, ...symbolPaths], onProgress),
+      Assets.load(
+        [gameBackgroundPath, symbolBackgroundPath, ...symbolPaths],
+        onProgress,
+      ),
       LoadingView.loadMusic(),
     ]);
 
     return {
       gameBackground: textures[gameBackgroundPath],
       symbols: symbolPaths.map((path) => textures[path]),
+      symbolBackground: textures[symbolBackgroundPath],
       music,
     };
   }
@@ -200,10 +206,7 @@ export class LoadingView extends Container {
 
     this.setBarPosition(
       centerX,
-      titleTopMargin +
-        this.titleLabel.height +
-        spacing +
-        this.barHeight / 2,
+      titleTopMargin + this.titleLabel.height + spacing + this.barHeight / 2,
     );
 
     const silhouetteBottomMargin =
