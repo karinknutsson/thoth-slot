@@ -57,21 +57,14 @@ async function createApp(): Promise<void> {
   );
   app.stage.addChild(gameView);
 
-  // Start the background music now that the game view is showing.
-  // Browsers block audio autoplay without a prior user gesture, so fall
-  // back to starting it on the first interaction if that happens.
-  music.play().catch((error) => {
-    console.warn("Music autoplay was blocked, waiting for user input:", error);
-
+  // Start the background music now that the game view is showing
+  music.play().catch(() => {
     const startMusic = () => {
-      music.play().catch((retryError) => {
-        console.warn(
-          "Music still failed to play after user input:",
-          retryError,
-        );
-      });
+      music.play().catch(() => {});
     };
 
+    // Browsers block audio autoplay without a prior user gesture, so fall
+    // back to starting it on the first interaction if that happens
     for (const eventName of ["pointerdown", "keydown", "touchstart"]) {
       document.addEventListener(eventName, startMusic, {
         once: true,

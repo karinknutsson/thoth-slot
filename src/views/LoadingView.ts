@@ -87,6 +87,7 @@ export class LoadingView extends Container {
       (_, i) => `/assets/symbols/${String(i + 1).padStart(2, "0")}.png`,
     );
 
+    // Load all textures and music concurrently, reporting progress if a callback is provided
     const [textures, music] = await Promise.all([
       Assets.load(
         [gameBackgroundPath, symbolBackgroundPath, ...symbolPaths],
@@ -103,6 +104,7 @@ export class LoadingView extends Container {
     };
   }
 
+  // Load the background music and return an HTMLAudioElement that can be played
   private static loadMusic(): Promise<HTMLAudioElement> {
     return new Promise((resolve, reject) => {
       const audio = new Audio(LoadingView.MUSIC_PATH);
@@ -126,10 +128,11 @@ export class LoadingView extends Container {
 
   setProgress(ratio: number): void {
     this.progress = Math.max(0, Math.min(1, ratio));
-    this.drawBar();
+    this.drawLoadingBar();
   }
 
-  private drawBar(): void {
+  // Draw the loading bar based on the current progress
+  private drawLoadingBar(): void {
     this.barBackground
       .clear()
       .roundRect(
@@ -153,6 +156,7 @@ export class LoadingView extends Container {
       .fill({ color: 0xfbd554 });
   }
 
+  // Set the position of the loading bar and its fill based on the center coordinates
   private setBarPosition(centerX: number, centerY: number): void {
     this.barBackground.position.set(centerX, centerY);
     this.barFill.position.set(
@@ -164,6 +168,7 @@ export class LoadingView extends Container {
   private resize(): void {
     const isMobile = window.innerWidth < LoadingView.MOBILE_BREAKPOINT;
 
+    // Scale the page background to cover the entire window while maintaining its aspect ratio
     const scale = Math.max(
       window.innerWidth / this.pageBackground.texture.width,
       window.innerHeight / this.pageBackground.texture.height,
@@ -175,16 +180,19 @@ export class LoadingView extends Container {
       window.innerHeight / 2,
     );
 
+    // Adjust the loading bar dimensions based on the device type
     this.barWidth = isMobile
       ? LoadingView.BAR_WIDTH_MOBILE
       : LoadingView.BAR_WIDTH_DESKTOP;
     this.barHeight = isMobile
       ? LoadingView.BAR_HEIGHT_MOBILE
       : LoadingView.BAR_HEIGHT_DESKTOP;
-    this.drawBar();
+    this.drawLoadingBar();
 
+    // Adjust the title label font size based on the device type
     this.titleLabel.style.fontSize = isMobile ? 48 : 96;
 
+    // Adjust the silhouette size based on the device type and window dimensions
     const silhouetteHeightRatio = isMobile
       ? LoadingView.SILHOUETTE_HEIGHT_RATIO_MOBILE
       : LoadingView.SILHOUETTE_HEIGHT_RATIO_DESKTOP;
@@ -194,9 +202,11 @@ export class LoadingView extends Container {
     this.silhouette.height = silhouetteHeight;
     this.silhouette.width = silhouetteHeight * silhouetteAspect;
 
+    // Calculate the center X position and spacing for layout adjustments
     const centerX = window.innerWidth / 2;
     const spacing = isMobile ? 24 : 32;
 
+    // Set the positions of the title label
     const titleTopMargin =
       window.innerHeight * LoadingView.TITLE_TOP_MARGIN_RATIO;
     this.titleLabel.position.set(
@@ -204,11 +214,13 @@ export class LoadingView extends Container {
       titleTopMargin + this.titleLabel.height / 2,
     );
 
+    // Set the position of the loading bar
     this.setBarPosition(
       centerX,
       titleTopMargin + this.titleLabel.height + spacing + this.barHeight / 2,
     );
 
+    // Set the position of the Thoth silhouette
     const silhouetteBottomMargin =
       window.innerHeight * LoadingView.SILHOUETTE_BOTTOM_MARGIN_RATIO;
     this.silhouette.position.set(

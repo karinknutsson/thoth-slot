@@ -47,10 +47,12 @@ export class ReelView extends Container {
   }
 
   resize(reelWidth: number, symbolSize: number, symbolSpacing: number): void {
+    // Calculate the total height of the reel based on the number of visible symbols, their size, and the spacing between them
     const reelHeight =
       symbolSize * ReelView.VISIBLE_SYMBOLS +
       (ReelView.VISIBLE_SYMBOLS - 1) * symbolSpacing;
 
+    // Create a linear gradient for the reel background
     const gradient = new FillGradient({
       type: "linear",
       start: { x: 0, y: 0 },
@@ -62,18 +64,20 @@ export class ReelView extends Container {
       ],
     });
 
+    // Clear the previous background and draw the new gradient background
     this.background.clear().rect(0, 0, reelWidth, reelHeight).fill(gradient);
 
+    // Calculate the size of the icons based on the symbol size and the defined scale
     const iconSize = symbolSize * ReelView.ICON_SCALE;
 
-    // Distribute the same total gap space evenly: before the first symbol,
-    // between each symbol, and after the last one (space-evenly, not
-    // space-between).
+    // Distribute the same total gap space evenly
     const totalGapSpace = (ReelView.VISIBLE_SYMBOLS - 1) * symbolSpacing;
     const evenGap = totalGapSpace / (ReelView.VISIBLE_SYMBOLS + 1);
 
+    // Calculate the size of the symbol backgrounds based on the symbol size and the defined scale
     const symbolBackgroundSize = symbolSize * ReelView.SYMBOL_BACKGROUND_SCALE;
 
+    // Position the symbol backgrounds evenly within the reel
     this.symbolBackgrounds.forEach((symbolBackground, index) => {
       const centerY = evenGap + index * (symbolSize + evenGap) + symbolSize / 2;
       symbolBackground.width = symbolBackgroundSize;
@@ -81,6 +85,7 @@ export class ReelView extends Container {
       symbolBackground.position.set(reelWidth / 2, centerY);
     });
 
+    // Position the symbol sprites evenly within the reel
     this.symbolSprites.forEach((sprite, index) => {
       sprite.width = iconSize;
       sprite.height = iconSize;
