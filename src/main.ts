@@ -2,6 +2,10 @@ import "./style.css";
 import { LoadingView } from "./views/LoadingView";
 import { GameView } from "./views/GameView";
 import { Application } from "pixi.js";
+import { BackendManager } from "./services/BackendManager";
+import { paytable } from "./data/paytable-data";
+import { SpinController } from "./controllers/SpinController";
+import { GameStateModel } from "./models/GameStateModel";
 
 async function createApp(): Promise<void> {
   // Create a new application
@@ -14,7 +18,7 @@ async function createApp(): Promise<void> {
   document.body.appendChild(app.canvas);
 
   // Start loading the game assets in the background right away
-  const assetsPromise = LoadingView.loadAssets();
+  const assetsPromise = LoadingView.loadAssets(paytable.symbols);
 
   // Create and add the loading view to the stage
   const loadingView = await LoadingView.create();
@@ -49,13 +53,31 @@ async function createApp(): Promise<void> {
   app.stage.removeChild(loadingView);
 
   // Create and add the game view to the stage
+  const backend = new BackendManager(paytable);
   const gameView = new GameView(
     loadingView.pageBackgroundTexture,
     gameBackgroundTexture,
     symbolTextures,
+    backend.getWeightedPool(),
     symbolBackgroundTexture,
   );
   app.stage.addChild(gameView);
+
+  // Create the game state model with a starting balance of 1000 and a default bet of 1
+  const model = new GameStateModel(1000, 1);
+  gameView.updateBalance(model.balance);
+
+  // Create the spin controller to handle the game logic
+  const spinController = new SpinController(model, backend, gameView);
+
+  gameView.spinButton.on("pointertap", () => {
+    gameView.setSpinButtonEnabled(false);
+    void spinController.spin().finally(() => {
+      gameView.setSpinButtonEnabled(true);
+    });
+  });
+
+  return;
 
   // Start the background music now that the game view is showing
   music.play().catch(() => {
