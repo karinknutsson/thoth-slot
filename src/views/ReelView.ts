@@ -8,14 +8,25 @@ export class ReelView extends Container {
   private static readonly ICON_SCALE = 0.8;
   private static readonly SYMBOL_BACKGROUND_ALPHA = 0.5;
   private static readonly SYMBOL_BACKGROUND_SCALE = 1.5;
+  private static readonly FLICKER_INTERVAL_MS = 60;
 
   private readonly background: Graphics;
   private readonly symbolBackgrounds: Sprite[];
   private readonly symbolSprites: Sprite[];
+  private readonly textureMap: Record<string, Texture>;
+  private symbolIds: string[];
+  private flickerIntervalId: number | null = null;
+  private readonly weightedPool: string[];
 
-  constructor(symbolTextures: Texture[], symbolBackgroundTexture: Texture) {
+  constructor(
+    textureMap: Record<string, Texture>,
+    weightedPool: string[],
+    symbolBackgroundTexture: Texture,
+  ) {
     super();
 
+    this.textureMap = textureMap;
+    this.weightedPool = weightedPool;
     this.background = new Graphics();
     this.addChild(this.background);
 
@@ -31,19 +42,52 @@ export class ReelView extends Container {
     this.addChild(...this.symbolBackgrounds);
 
     // Create the symbol sprites for the reel
-    this.symbolSprites = Array.from(
-      { length: ReelView.VISIBLE_SYMBOLS },
-      () => {
-        const texture =
-          symbolTextures[Math.floor(Math.random() * symbolTextures.length)];
-        const sprite = new Sprite(texture);
-        sprite.anchor.set(0.5);
-        return sprite;
-      },
+    this.symbolIds = Array.from({ length: ReelView.VISIBLE_SYMBOLS }, () =>
+      this.randomSymbolId(),
     );
 
-    // Add the symbol sprites to the reel container
+    this.symbolSprites = this.symbolIds.map((id) => {
+      const sprite = new Sprite(this.textureMap[id]);
+      sprite.anchor.set(0.5);
+      return sprite;
+    });
     this.addChild(...this.symbolSprites);
+  }
+
+  // Generate a random symbol ID from the weighted pool
+  private randomSymbolId(): string {
+    return this.weightedPool[
+      Math.floor(Math.random() * this.weightedPool.length)
+    ];
+  }
+
+  // Set the symbols for the reel based on the provided symbol IDs
+  setSymbols(symbolIds: string[]): void {
+    this.symbolIds = symbolIds;
+    symbolIds.forEach((id, index) => {
+      this.symbolSprites[index].texture = this.textureMap[id];
+    });
+  }
+
+  // Swap symbols to simulate spinning
+  startSpin(): void {
+    if (this.flickerIntervalId !== null) return;
+
+    this.flickerIntervalId = window.setInterval(() => {
+      const randomIds = Array.from({ length: ReelView.VISIBLE_SYMBOLS }, () =>
+        this.randomSymbolId(),
+      );
+      this.setSymbols(randomIds);
+    }, ReelView.FLICKER_INTERVAL_MS);
+  }
+
+  // Stop the spinning and set the final symbols
+  stopSpin(finalSymbolIds: string[]): void {
+    if (this.flickerIntervalId !== null) {
+      clearInterval(this.flickerIntervalId);
+      this.flickerIntervalId = null;
+    }
+    this.setSymbols(finalSymbolIds);
   }
 
   resize(reelWidth: number, symbolSize: number, symbolSpacing: number): void {

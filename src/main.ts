@@ -2,6 +2,8 @@ import "./style.css";
 import { LoadingView } from "./views/LoadingView";
 import { GameView } from "./views/GameView";
 import { Application } from "pixi.js";
+import { BackendManager } from "./services/BackendManager";
+import { paytable } from "./data/paytable-data";
 
 async function createApp(): Promise<void> {
   // Create a new application
@@ -14,7 +16,7 @@ async function createApp(): Promise<void> {
   document.body.appendChild(app.canvas);
 
   // Start loading the game assets in the background right away
-  const assetsPromise = LoadingView.loadAssets();
+  const assetsPromise = LoadingView.loadAssets(paytable.symbols);
 
   // Create and add the loading view to the stage
   const loadingView = await LoadingView.create();
@@ -49,10 +51,12 @@ async function createApp(): Promise<void> {
   app.stage.removeChild(loadingView);
 
   // Create and add the game view to the stage
+  const backend = new BackendManager(paytable);
   const gameView = new GameView(
     loadingView.pageBackgroundTexture,
     gameBackgroundTexture,
     symbolTextures,
+    backend.getWeightedPool(),
     symbolBackgroundTexture,
   );
   app.stage.addChild(gameView);

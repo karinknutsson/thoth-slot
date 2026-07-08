@@ -1,4 +1,4 @@
-import { Container, Graphics, Sprite, Texture } from "pixi.js";
+import { Container, Graphics, Sprite, Text, Texture } from "pixi.js";
 import { ReelView } from "./ReelView";
 
 export class GameView extends Container {
@@ -18,12 +18,17 @@ export class GameView extends Container {
   private readonly background: Sprite;
   private readonly reelsBackground: Sprite;
   private readonly contentBackground: Graphics;
-  private readonly reels: ReelView[];
+
+  readonly reels: ReelView[];
+
+  private readonly balanceText: Text;
+  private readonly winText: Text;
 
   public constructor(
     pageBackgroundTexture: Texture,
     gameBackgroundTexture: Texture,
-    symbolTextures: Texture[],
+    symbolTextureMap: Record<string, Texture>,
+    weightedPool: string[],
     symbolBackgroundTexture: Texture,
   ) {
     super();
@@ -41,12 +46,34 @@ export class GameView extends Container {
 
     this.reels = Array.from(
       { length: GameView.REEL_COUNT },
-      () => new ReelView(symbolTextures, symbolBackgroundTexture),
+      () =>
+        new ReelView(symbolTextureMap, weightedPool, symbolBackgroundTexture),
     );
+
     this.addChild(...this.reels);
+
+    this.balanceText = new Text({
+      text: "Balance: 0",
+      style: { fill: 0xffffff, fontSize: 22, fontFamily: "sans-serif" },
+    });
+    this.addChild(this.balanceText);
+
+    this.winText = new Text({
+      text: "Win: 0",
+      style: { fill: 0xffd24d, fontSize: 22, fontFamily: "sans-serif" },
+    });
+    this.addChild(this.winText);
 
     this.resize();
     window.addEventListener("resize", () => this.resize());
+  }
+
+  updateBalance(balance: number): void {
+    this.balanceText.text = `Balance: ${balance}`;
+  }
+
+  updateWin(amount: number): void {
+    this.winText.text = `Win: ${amount}`;
   }
 
   private resize(): void {
@@ -112,5 +139,8 @@ export class GameView extends Container {
       reel.resize(reelWidth, symbolSize, symbolSpacing);
       reel.position.set(startX + index * (reelWidth + reelGap), startY);
     });
+
+    this.balanceText.position.set(40, window.innerHeight - 60);
+    this.winText.position.set(40, window.innerHeight - 30);
   }
 }

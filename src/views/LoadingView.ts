@@ -1,4 +1,5 @@
 import { Container, Graphics, Text, Assets, Sprite, Texture } from "pixi.js";
+import type Symbol from "../types/symbol.interface";
 
 export class LoadingView extends Container {
   private static readonly MOBILE_BREAKPOINT = 768;
@@ -74,18 +75,23 @@ export class LoadingView extends Container {
     return new LoadingView(pageBackgroundTexture, silhouetteTexture);
   }
 
-  static async loadAssets(onProgress?: (progress: number) => void): Promise<{
+  static async loadAssets(
+    symbols: Symbol[],
+    onProgress?: (progress: number) => void,
+  ): Promise<{
     gameBackground: Texture;
-    symbols: Texture[];
+    symbols: Record<string, Texture>;
     symbolBackground: Texture;
     music: HTMLAudioElement;
   }> {
     const gameBackgroundPath = "/assets/images/game-background.png";
     const symbolBackgroundPath = "/assets/images/squircle-yellow.svg";
-    const symbolPaths = Array.from(
-      { length: LoadingView.SYMBOL_COUNT },
-      (_, i) => `/assets/symbols/${String(i + 1).padStart(2, "0")}.png`,
-    );
+
+    const symbolPathToId = new Map<string, string>();
+    for (const symbol of symbols) {
+      symbolPathToId.set(`/assets/symbols/${symbol.textureKey}.png`, symbol.id);
+    }
+    const symbolPaths = Array.from(symbolPathToId.keys());
 
     // Load all textures and music concurrently, reporting progress if a callback is provided
     const [textures, music] = await Promise.all([
@@ -96,9 +102,14 @@ export class LoadingView extends Container {
       LoadingView.loadMusic(),
     ]);
 
+    const symbolTextureMap: Record<string, Texture> = {};
+    for (const [path, id] of symbolPathToId) {
+      symbolTextureMap[id] = textures[path];
+    }
+
     return {
       gameBackground: textures[gameBackgroundPath],
-      symbols: symbolPaths.map((path) => textures[path]),
+      symbols: symbolTextureMap,
       symbolBackground: textures[symbolBackgroundPath],
       music,
     };
