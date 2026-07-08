@@ -76,6 +76,8 @@ async function createApp(): Promise<void> {
     });
   });
 
+  return;
+
   // Start the background music now that the game view is showing
   music.play().catch(() => {
     const startMusic = () => {

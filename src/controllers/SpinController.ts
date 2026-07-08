@@ -25,9 +25,9 @@ export class SpinController {
     const grid = this.backend.randomGrid();
 
     await this.wait(1500);
-    this.view.reels.forEach((reel, index) => {
-      reel.stopSpin(grid[index]);
-    });
+    await Promise.all(
+      this.view.reels.map((reel, index) => reel.stopSpin(grid[index])),
+    );
 
     // TODO: check grid against paytable for wins, add to balance
     this.model.setPhase("idle");

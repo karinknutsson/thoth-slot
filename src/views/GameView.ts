@@ -3,7 +3,9 @@ import { ReelView } from "./ReelView";
 
 export class GameView extends Container {
   private static readonly MOBILE_BREAKPOINT = 768;
-  private static readonly BOARD_WIDTH_RATIO_DESKTOP = 0.8;
+  private static readonly DESKTOP_BREAKPOINT = 1400;
+  private static readonly BOARD_WIDTH_RATIO_DESKTOP = 0.6;
+  private static readonly BOARD_WIDTH_RATIO_TABLET = 0.8;
   private static readonly BOARD_WIDTH_RATIO_MOBILE = 0.9;
   private static readonly REEL_COUNT = 5;
   private static readonly SYMBOL_SPACING_RATIO = 0.15;
@@ -122,10 +124,12 @@ export class GameView extends Container {
     const centerX = window.innerWidth / 2;
     const centerY = window.innerHeight / 2;
 
-    const isMobile = window.innerWidth < GameView.MOBILE_BREAKPOINT;
-    const boardWidthRatio = isMobile
-      ? GameView.BOARD_WIDTH_RATIO_MOBILE
-      : GameView.BOARD_WIDTH_RATIO_DESKTOP;
+    const boardWidthRatio =
+      window.innerWidth < GameView.MOBILE_BREAKPOINT
+        ? GameView.BOARD_WIDTH_RATIO_MOBILE
+        : window.innerWidth < GameView.DESKTOP_BREAKPOINT
+          ? GameView.BOARD_WIDTH_RATIO_TABLET
+          : GameView.BOARD_WIDTH_RATIO_DESKTOP;
 
     const boardTexture = this.reelsBackground.texture;
     const boardWidth = window.innerWidth * boardWidthRatio;
