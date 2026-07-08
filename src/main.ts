@@ -63,8 +63,9 @@ async function createApp(): Promise<void> {
   );
   app.stage.addChild(gameView);
 
-  // Create the game state model with a starting balance of 1000 and a default bet of 10
-  const model = new GameStateModel(1000, 10);
+  // Create the game state model with a starting balance of 1000 and a default bet of 1
+  const model = new GameStateModel(1000, 1);
+  gameView.updateBalance(model.balance);
 
   // Create the spin controller to handle the game logic
   const spinController = new SpinController(model, backend, gameView);

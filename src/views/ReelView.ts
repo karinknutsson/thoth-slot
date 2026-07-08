@@ -7,7 +7,7 @@ import {
   Ticker,
 } from "pixi.js";
 
-type SpinPhase = "idle" | "spinning" | "stopping";
+type SpinPhase = "idle" | "spinning" | "stopping" | "settling";
 
 export class ReelView extends Container {
   static readonly VISIBLE_SYMBOLS = 3;
@@ -18,10 +18,14 @@ export class ReelView extends Container {
   private static readonly ICON_SCALE = 0.8;
   private static readonly SYMBOL_BACKGROUND_ALPHA = 0.5;
   private static readonly SYMBOL_BACKGROUND_SCALE = 1.5;
-  private static readonly MAX_SPIN_SPEED = 3200; // px per second
+  private static readonly BASE_SPIN_SPEED = 3200;
+  private static readonly SPIN_SPEED_AMPLITUDE = 1400;
+  private static readonly SPIN_OSCILLATION_PERIOD_MS = 2150;
   private static readonly SPIN_UP_DURATION_MS = 200;
   private static readonly SPIN_DOWN_DURATION_MS = 650;
-  private static readonly SPIN_DOWN_CREEP_FACTOR = 0.1;
+  private static readonly SPIN_DOWN_CREEP_FACTOR = 0.4;
+  private static readonly SETTLE_DURATION_MS = 120;
+  private static readonly SETTLE_OVERSHOOT_FRACTION = 0.05;
 
   private readonly background: Graphics;
   private readonly contentMask: Graphics;
@@ -36,10 +40,13 @@ export class ReelView extends Container {
 
   private phase: SpinPhase = "idle";
   private phaseElapsedMs = 0;
+  // elapsed time since startSpin(), kept running across the spinning ->
+  // stopping transition so the sine oscillation phase stays continuous
+  private continuousElapsedMs = 0;
   private offsetY = 0;
   private finalQueue: string[] | null = null;
   private finalShiftPending = false;
-  private onStopped: (() => void) | null = null;
+  private onSettled: (() => void) | null = null;
 
   private reelWidth = 0;
   private symbolSize = 0;
@@ -101,6 +108,7 @@ export class ReelView extends Container {
     if (this.phase !== "idle") return;
     this.phase = "spinning";
     this.phaseElapsedMs = 0;
+    this.continuousElapsedMs = 0;
   }
 
   // Ease the reel to a stop, landing on the given symbols (top to bottom).
@@ -111,7 +119,7 @@ export class ReelView extends Container {
       this.finalShiftPending = false;
       this.phase = "stopping";
       this.phaseElapsedMs = 0;
-      this.onStopped = resolve;
+      this.onSettled = resolve;
     });
   }
 
@@ -123,6 +131,13 @@ export class ReelView extends Container {
     if (this.phase === "idle") return;
 
     this.phaseElapsedMs += ticker.deltaMS;
+    this.continuousElapsedMs += ticker.deltaMS;
+
+    if (this.phase === "settling") {
+      this.updateSettle();
+      this.renderStrip();
+      return;
+    }
 
     const speed = this.currentSpeed();
     this.offsetY += speed * (ticker.deltaMS / 1000);
@@ -130,7 +145,8 @@ export class ReelView extends Container {
     while (this.stepY > 0 && this.offsetY >= this.stepY) {
       this.offsetY -= this.stepY;
       this.shiftStrip();
-      if ((this.phase as SpinPhase) === "idle") {
+      const phaseAfterShift = this.phase as SpinPhase;
+      if (phaseAfterShift !== "spinning" && phaseAfterShift !== "stopping") {
         this.offsetY = 0;
         break;
       }
@@ -139,36 +155,74 @@ export class ReelView extends Container {
     this.renderStrip();
   };
 
+  // After the final symbols are in place, let the reel overshoot slightly
+  // past its resting spot and spring back, instead of snapping to a stop.
+  private updateSettle(): void {
+    const settleT = Math.min(
+      this.phaseElapsedMs / ReelView.SETTLE_DURATION_MS,
+      1,
+    );
+    this.offsetY =
+      Math.sin(Math.PI * settleT) *
+      this.stepY *
+      ReelView.SETTLE_OVERSHOOT_FRACTION;
+
+    if (settleT >= 1) {
+      this.finalize();
+    }
+  }
+
   private currentSpeed(): number {
     if (this.phase === "spinning") {
-      const t = Math.min(
+      const rampT = Math.min(
         this.phaseElapsedMs / ReelView.SPIN_UP_DURATION_MS,
         1,
       );
-      return ReelView.MAX_SPIN_SPEED * this.easeOutQuad(t);
+      const envelope = this.easeInOutSine(rampT);
+      return this.oscillatingSpeed(envelope);
     }
 
     if (this.phase === "stopping") {
-      const t = Math.min(
+      const decayT = Math.min(
         this.phaseElapsedMs / ReelView.SPIN_DOWN_DURATION_MS,
         1,
       );
-      const factor = Math.max(
-        1 - this.easeInQuad(t),
+      const envelope = Math.max(
+        1 - this.easeInCubic(decayT),
         ReelView.SPIN_DOWN_CREEP_FACTOR,
       );
-      return ReelView.MAX_SPIN_SPEED * factor;
+      return this.oscillatingSpeed(envelope);
     }
 
     return 0;
   }
 
-  private easeOutQuad(t: number): number {
-    return 1 - (1 - t) * (1 - t);
+  // The reel's speed oscillates on a sine wave around the base speed for the
+  // whole spin, rather than sitting flat at a constant cruise speed. The
+  // envelope (0..1) fades the wave in on spin-up and back out on spin-down.
+  private oscillatingSpeed(envelope: number): number {
+    const wave = Math.sin(
+      (this.continuousElapsedMs / ReelView.SPIN_OSCILLATION_PERIOD_MS) *
+        Math.PI *
+        2,
+    );
+    const speed =
+      envelope *
+      (ReelView.BASE_SPIN_SPEED + wave * ReelView.SPIN_SPEED_AMPLITUDE);
+
+    return Math.max(speed, 0);
   }
 
-  private easeInQuad(t: number): number {
-    return t * t;
+  // Stays close to 0 for most of the range and rises sharply near t=1, so the
+  // deceleration it drives stays brisk and only drops off late
+  private easeInCubic(t: number): number {
+    return t * t * t;
+  }
+
+  // Sine S-curve: slow at the edges (t=0, t=1), fastest-changing through the
+  // middle, so speed rises/falls smoothly instead of linearly or in a sharp quad
+  private easeInOutSine(t: number): number {
+    return -(Math.cos(Math.PI * t) - 1) / 2;
   }
 
   // Shift the strip down by one row, pulling in a new symbol at the top.
@@ -185,19 +239,25 @@ export class ReelView extends Container {
 
     if (this.finalQueue && this.finalQueue.length === 0) {
       if (this.finalShiftPending) {
-        this.finalize();
+        this.beginSettle();
       } else {
         this.finalShiftPending = true;
       }
     }
   }
 
-  private finalize(): void {
-    this.phase = "idle";
+  private beginSettle(): void {
+    this.phase = "settling";
+    this.phaseElapsedMs = 0;
     this.finalQueue = null;
     this.finalShiftPending = false;
-    this.onStopped?.();
-    this.onStopped = null;
+  }
+
+  private finalize(): void {
+    this.phase = "idle";
+    this.offsetY = 0;
+    this.onSettled?.();
+    this.onSettled = null;
   }
 
   private renderStrip(): void {
