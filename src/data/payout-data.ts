@@ -1,4 +1,4 @@
-import type PayoutRule from "./payout-rule.interface";
+import type PayoutRule from "../types/payout-rule.interface";
 
 export const payoutRules: PayoutRule[] = [
   { symbolId: "thoth", count: 3, payoutMultiplier: 10 },

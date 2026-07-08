@@ -1,4 +1,4 @@
-import type Symbol from "./symbol.interface";
+import type Symbol from "../types/symbol.interface";
 
 export const symbols = [
   { id: "thoth", textureKey: "01", weight: 10, isWild: false },
