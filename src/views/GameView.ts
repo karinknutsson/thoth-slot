@@ -19,6 +19,10 @@ export class GameView extends Container {
   private readonly reelsBackground: Sprite;
   private readonly contentBackground: Graphics;
 
+  readonly spinButton: Container;
+  private readonly spinButtonBackground: Graphics;
+  private readonly spinButtonLabel: Text;
+
   readonly reels: ReelView[];
 
   private readonly balanceText: Text;
@@ -52,6 +56,30 @@ export class GameView extends Container {
 
     this.addChild(...this.reels);
 
+    // Create the spin button
+    this.spinButton = new Container();
+    this.spinButton.eventMode = "static";
+    this.spinButton.cursor = "pointer";
+
+    this.spinButtonBackground = new Graphics()
+      .roundRect(0, 0, 140, 60, 12)
+      .fill({ color: 0xfbd554 });
+
+    this.spinButtonLabel = new Text({
+      text: "SPIN",
+      style: {
+        fill: 0x1a1a22,
+        fontSize: 24,
+        fontFamily: "sans-serif",
+        fontWeight: "bold",
+      },
+    });
+    this.spinButtonLabel.anchor.set(0.5);
+    this.spinButtonLabel.position.set(70, 30);
+
+    this.spinButton.addChild(this.spinButtonBackground, this.spinButtonLabel);
+    this.addChild(this.spinButton);
+
     this.balanceText = new Text({
       text: "Balance: 0",
       style: { fill: 0xffffff, fontSize: 22, fontFamily: "sans-serif" },
@@ -74,6 +102,11 @@ export class GameView extends Container {
 
   updateWin(amount: number): void {
     this.winText.text = `Win: ${amount}`;
+  }
+
+  setSpinButtonEnabled(enabled: boolean): void {
+    this.spinButton.eventMode = enabled ? "static" : "none";
+    this.spinButton.alpha = enabled ? 1 : 0.5;
   }
 
   private resize(): void {

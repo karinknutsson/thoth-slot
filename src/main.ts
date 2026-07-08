@@ -4,6 +4,8 @@ import { GameView } from "./views/GameView";
 import { Application } from "pixi.js";
 import { BackendManager } from "./services/BackendManager";
 import { paytable } from "./data/paytable-data";
+import { SpinController } from "./controllers/SpinController";
+import { GameStateModel } from "./models/GameStateModel";
 
 async function createApp(): Promise<void> {
   // Create a new application
@@ -60,6 +62,19 @@ async function createApp(): Promise<void> {
     symbolBackgroundTexture,
   );
   app.stage.addChild(gameView);
+
+  // Create the game state model with a starting balance of 1000 and a default bet of 10
+  const model = new GameStateModel(1000, 10);
+
+  // Create the spin controller to handle the game logic
+  const spinController = new SpinController(model, backend, gameView);
+
+  gameView.spinButton.on("pointertap", () => {
+    gameView.setSpinButtonEnabled(false);
+    void spinController.spin().finally(() => {
+      gameView.setSpinButtonEnabled(true);
+    });
+  });
 
   // Start the background music now that the game view is showing
   music.play().catch(() => {
