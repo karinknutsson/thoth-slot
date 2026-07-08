@@ -1,4 +1,5 @@
 import type { Paytable } from "../types/paytable.interface";
+import type Win from "../types/win.interface";
 
 export class BackendManager {
   private readonly paytable: Paytable;
@@ -9,6 +10,7 @@ export class BackendManager {
     this.weightedPool = this.buildWeightedPool();
   }
 
+  // Generates a weighted pool of symbol IDs based on their weights in the paytable
   private buildWeightedPool(): string[] {
     const pool: string[] = [];
     for (const symbol of this.paytable.symbols) {
@@ -19,16 +21,19 @@ export class BackendManager {
     return pool;
   }
 
+  // Returns the weighted pool of symbol IDs
   public getWeightedPool(): string[] {
     return this.weightedPool;
   }
 
+  // Returns a random symbol ID from the weighted pool
   public weightedRandomSymbol(): string {
     return this.weightedPool[
       Math.floor(Math.random() * this.weightedPool.length)
     ];
   }
 
+  // Generates a random grid of symbols based on the weighted pool
   public randomGrid(): string[][] {
     const reelCount = 5;
     const rowCount = 3;
@@ -43,5 +48,41 @@ export class BackendManager {
     }
 
     return grid;
+  }
+
+  // Evaluates the grid against the paytable and returns an array of win objects for any winning lines
+  public evaluateWins(grid: string[][], bet: number): Win[] {
+    const wins: Win[] = [];
+
+    for (const line of this.paytable.lines) {
+      const lineSymbolIds = line.rowPerReel.map(
+        (row, offset) => grid[line.startReel + offset][row],
+      );
+
+      const symbolId = lineSymbolIds[0];
+      let count = 1;
+      while (
+        count < lineSymbolIds.length &&
+        lineSymbolIds[count] === symbolId
+      ) {
+        count++;
+      }
+
+      const payoutRule = this.paytable.payouts.find(
+        (rule) => rule.symbolId === symbolId && rule.count === count,
+      );
+      if (!payoutRule) continue;
+
+      wins.push({
+        lineId: line.id,
+        lineName: line.name,
+        symbolId,
+        count,
+        payoutMultiplier: payoutRule.payoutMultiplier,
+        amount: payoutRule.payoutMultiplier * bet,
+      });
+    }
+
+    return wins;
   }
 }

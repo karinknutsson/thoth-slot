@@ -34,7 +34,7 @@ export class GameStateModel {
     this._balance -= this._bet;
   }
 
-  addWinnings(amount: number): void {
+  addWins(amount: number): void {
     this._balance += amount;
   }
 }

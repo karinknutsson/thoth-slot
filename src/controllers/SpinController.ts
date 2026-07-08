@@ -3,6 +3,9 @@ import type { BackendManager } from "../services/BackendManager";
 import type { GameView } from "../views/GameView";
 
 export class SpinController {
+  // Delay between each reel's stop, so they settle left to right instead of all at once
+  private static readonly REEL_STOP_STAGGER_MS = 500;
+
   private readonly model: GameStateModel;
   private readonly backend: BackendManager;
   private readonly view: GameView;
@@ -26,10 +29,23 @@ export class SpinController {
 
     await this.wait(1500);
     await Promise.all(
-      this.view.reels.map((reel, index) => reel.stopSpin(grid[index])),
+      this.view.reels.map((reel, index) =>
+        this.wait(index * SpinController.REEL_STOP_STAGGER_MS).then(() =>
+          reel.stopSpin(grid[index]),
+        ),
+      ),
     );
 
-    // TODO: check grid against paytable for wins, add to balance
+    const wins = this.backend.evaluateWins(grid, this.model.bet);
+    const totalWin = wins.reduce((sum, win) => sum + win.amount, 0);
+
+    if (totalWin > 0) {
+      console.log(`Win: ${totalWin}`, wins);
+      this.model.addWins(totalWin);
+      this.view.updateBalance(this.model.balance);
+    }
+    this.view.updateWin(totalWin);
+
     this.model.setPhase("idle");
   }
 
