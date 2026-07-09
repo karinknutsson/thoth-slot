@@ -1,10 +1,12 @@
 import "./style.css";
 import { LoadingView } from "./views/LoadingView";
 import { GameView } from "./views/GameView";
+import { CheatView } from "./views/CheatView";
 import { Application } from "pixi.js";
 import { BackendManager } from "./services/BackendManager";
 import { paytable } from "./data/paytable-data";
 import { SpinController } from "./controllers/SpinController";
+import { CheatsController } from "./controllers/CheatController";
 import { GameStateModel } from "./models/GameStateModel";
 import { GameConfig } from "./config/GameConfig";
 
@@ -18,39 +20,21 @@ async function createApp(): Promise<void> {
   // Append the application canvas to the document body
   document.body.appendChild(app.canvas);
 
-  // Start loading the game assets in the background right away
-  const assetsPromise = LoadingView.loadAssets(paytable.symbols);
-
   // Create and add the loading view to the stage
   const loadingView = await LoadingView.create();
   app.stage.addChild(loadingView);
 
-  // Simulate loading progress
-  const fakeProgressPromise = new Promise<void>((resolve) => {
-    let progress = 0.02;
-
-    const loadingInterval = setInterval(() => {
-      progress += 0.01;
-      loadingView.setProgress(progress);
-
-      if (progress >= 1) {
-        clearInterval(loadingInterval);
-        resolve();
-      }
-    }, 50);
-  });
-
-  // Wait for both the fake progress bar and the real assets to finish
-  const [
-    {
-      gameBackground: gameBackgroundTexture,
-      symbols: symbolTextures,
-      symbolBackground: symbolBackgroundTexture,
-      balanceWinBackground: balanceWinBackgroundTexture,
-      spinButtonBackground: spinButtonBackgroundTexture,
-      music,
-    },
-  ] = await Promise.all([assetsPromise, fakeProgressPromise]);
+  // Load the game assets, updating the loading bar with their real progress
+  const {
+    gameBackground: gameBackgroundTexture,
+    symbols: symbolTextures,
+    symbolBackground: symbolBackgroundTexture,
+    balanceWinBackground: balanceWinBackgroundTexture,
+    spinButtonBackground: spinButtonBackgroundTexture,
+    music,
+  } = await LoadingView.loadAssets(paytable.symbols, (progress) =>
+    loadingView.setProgress(progress),
+  );
 
   // Remove the loading view now that loading is complete
   app.stage.removeChild(loadingView);
@@ -83,6 +67,14 @@ async function createApp(): Promise<void> {
       gameView.setSpinButtonEnabled(true);
     });
   });
+
+  if (GameConfig.showCheatMenu) {
+    const cheatsController = new CheatsController(backend);
+    const cheatView = new CheatView((cheatName) =>
+      cheatsController.select(cheatName),
+    );
+    app.stage.addChild(cheatView);
+  }
 
   return;
 
