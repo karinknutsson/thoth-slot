@@ -40,7 +40,7 @@ export class LoadingView extends Container {
     this.silhouette.anchor.set(0.5);
 
     this.titleLabel = new Text({
-      text: "Thoth Slot",
+      text: "Th0th Sl0t",
       style: { fill: 0xfbd554, fontSize: 48, fontFamily: "Caesar Dressing" },
     });
     this.titleLabel.anchor.set(0.5);
@@ -70,6 +70,7 @@ export class LoadingView extends Container {
       Assets.load(LoadingView.PAGE_BACKGROUND_PATH),
       Assets.load(LoadingView.SILHOUETTE_PATH),
       document.fonts.load('24px "Caesar Dressing"'),
+      document.fonts.load('800 24px "Inter"'),
     ]);
     return new LoadingView(pageBackgroundTexture, silhouetteTexture);
   }
@@ -81,10 +82,16 @@ export class LoadingView extends Container {
     gameBackground: Texture;
     symbols: Record<string, Texture>;
     symbolBackground: Texture;
+    balanceWinBackground: Texture;
+    spinButtonBackground: Texture;
     music: HTMLAudioElement;
   }> {
     const gameBackgroundPath = "/assets/images/game-background.png";
     const symbolBackgroundPath = "/assets/images/squircle-yellow.svg";
+    const balanceWinBackgroundPath =
+      "/assets/images/balance-win-background.png";
+    const spinButtonBackgroundPath =
+      "/assets/images/gold-star-spin-background.png";
 
     const symbolPathToId = new Map<string, string>();
     for (const symbol of symbols) {
@@ -95,7 +102,13 @@ export class LoadingView extends Container {
     // Load all textures and music concurrently, reporting progress if a callback is provided
     const [textures, music] = await Promise.all([
       Assets.load(
-        [gameBackgroundPath, symbolBackgroundPath, ...symbolPaths],
+        [
+          gameBackgroundPath,
+          symbolBackgroundPath,
+          balanceWinBackgroundPath,
+          spinButtonBackgroundPath,
+          ...symbolPaths,
+        ],
         onProgress,
       ),
       LoadingView.loadMusic(),
@@ -110,6 +123,8 @@ export class LoadingView extends Container {
       gameBackground: textures[gameBackgroundPath],
       symbols: symbolTextureMap,
       symbolBackground: textures[symbolBackgroundPath],
+      balanceWinBackground: textures[balanceWinBackgroundPath],
+      spinButtonBackground: textures[spinButtonBackgroundPath],
       music,
     };
   }

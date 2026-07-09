@@ -1,6 +1,6 @@
 export const GameConfig = {
   balance: {
-    starting: 1000,
+    starting: 10000,
     defaultBet: 1,
   },
 
