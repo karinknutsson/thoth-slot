@@ -35,6 +35,11 @@ export class BackendManager {
     ];
   }
 
+  // Sets a cheat grid for testing purposes
+  public setCheatGrid(grid: string[][] | null): void {
+    this.cheatGrid = grid;
+  }
+
   // Generates a random grid of symbols based on the weighted pool
   public randomGrid(): string[][] {
     if (this.cheatGrid) return this.cheatGrid;
