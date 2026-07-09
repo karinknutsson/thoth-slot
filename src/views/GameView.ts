@@ -24,8 +24,8 @@ export class GameView extends Container {
   private static readonly SPIN_BUTTON_HEIGHT_MULTIPLIER_MOBILE = 1.65;
   private static readonly SPIN_BUTTON_MARGIN = 188;
   private static readonly SPIN_BUTTON_LABEL_FONT_SIZE = 175;
-  private static readonly SPIN_BUTTON_LABEL_LETTER_SPACING = 4;
-  private static readonly SPIN_BUTTON_ACTIVE_COLOR = 0xd91e1e;
+  private static readonly SPIN_BUTTON_LABEL_LETTER_SPACING = 8;
+  private static readonly SPIN_BUTTON_ACTIVE_COLOR = 0xed1c1c;
   private static readonly SPIN_BUTTON_DISABLED_COLOR = 0x808080;
 
   private readonly imageWidth = 3080;
@@ -241,12 +241,7 @@ export class GameView extends Container {
 
     fill
       .clear()
-      .rect(
-        x + marginX,
-        y + marginY,
-        width - marginX * 2,
-        height - marginY * 2,
-      )
+      .rect(x + marginX, y + marginY, width - marginX * 2, height - marginY * 2)
       .fill({ color: GameView.REEL_GAP_COLOR });
 
     const textInset =
@@ -356,7 +351,8 @@ export class GameView extends Container {
       panelScale = panelWidth / panelTexture.width;
       panelHeight = panelTexture.height * panelScale;
 
-      spinButtonSize = panelHeight * GameView.SPIN_BUTTON_HEIGHT_MULTIPLIER_MOBILE;
+      spinButtonSize =
+        panelHeight * GameView.SPIN_BUTTON_HEIGHT_MULTIPLIER_MOBILE;
       const spinButtonScale = spinButtonSize / spinButtonTexture.width;
       const spinButtonHeight = spinButtonTexture.height * spinButtonScale;
 
