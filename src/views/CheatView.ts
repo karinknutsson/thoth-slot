@@ -3,7 +3,7 @@ import { cheats } from "../data/cheat-data";
 
 function labelFromKey(key: string): string {
   return key
-    .replace(/([A-Z])/g, " $1")
+    .replace(/([A-Z]|\d+)/g, " $1")
     .replace(/^./, (char) => char.toUpperCase());
 }
 

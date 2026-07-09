@@ -45,13 +45,17 @@ export class SpinController {
     const wins = this.backend.evaluateWins(grid, this.model.bet);
     const totalWin = wins.reduce((sum, win) => sum + win.amount, 0);
 
-    // A full row of 5 also satisfies its overlapping 3-reel sub-lines, so
-    // when a 5-of-a-kind win is present, only play the bigger sound for it
+    // A full row of 5 also satisfies its overlapping 3- and 4-reel sub-lines,
+    // so when a 5-of-a-kind win is present, only play the bigger sound for it
     const hasFiveOfAKind = wins.some((win) => win.count === 5);
 
     for (const win of wins) {
       if (win.count === 5) this.audio.play("magic-spell-5");
-      else if (win.count === 3 && !hasFiveOfAKind) this.audio.play("magic-spell-3");
+      else if (
+        (win.count === 3 || win.count === 4) &&
+        !hasFiveOfAKind
+      )
+        this.audio.play("magic-spell-3");
     }
 
     if (totalWin > 0) {

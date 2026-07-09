@@ -6,14 +6,14 @@ export const cheats: Record<string, string[][]> = {
     ["thoth", "urn", "horus"],
     ["vase", "scarab", "sphinx"],
   ],
-  topRow3Urn: [
+  topRow3Urns: [
     ["urn", "sphinx", "horus"],
     ["urn", "scarab", "vase"],
     ["urn", "scarab", "anubis"],
     ["urn", "scarab", "horus"],
     ["vase", "crookAndFlail", "sphinx"],
   ],
-  middleRow3Scarab: [
+  middleRow3Scarabs: [
     ["anubis", "urn", "urn"],
     ["horus", "scarab", "vase"],
     ["sphinx", "scarab", "anubis"],
@@ -27,7 +27,7 @@ export const cheats: Record<string, string[][]> = {
     ["urn", "thoth", "horus"],
     ["vase", "crookAndFlail", "sphinx"],
   ],
-  bottomRow5Urn: [
+  bottomRow5Urns: [
     ["vase", "sphinx", "urn"],
     ["scarab", "anubis", "urn"],
     ["crookAndFlail", "sphinx", "urn"],
