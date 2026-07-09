@@ -16,7 +16,10 @@ export class LoadingView extends Container {
   private static readonly BAR_CORNER_RADIUS = 4;
   private static readonly SILHOUETTE_BOTTOM_MARGIN_RATIO = 0.05;
   private static readonly TITLE_TOP_MARGIN_RATIO = 0.1;
-  private static readonly MUSIC_PATH = "/assets/music/egypt-desert-music.mp3";
+  private static readonly MUSIC_PATHS = [
+    "/assets/music/egypt-desert-music-01.mp3",
+    "/assets/music/egypt-desert-music-02.mp3",
+  ];
 
   private barWidth = LoadingView.BAR_WIDTH_DESKTOP;
   private barHeight = LoadingView.BAR_HEIGHT_DESKTOP;
@@ -84,7 +87,7 @@ export class LoadingView extends Container {
     symbolBackground: Texture;
     balanceWinBackground: Texture;
     spinButtonBackground: Texture;
-    music: HTMLAudioElement;
+    music: HTMLAudioElement[];
   }> {
     const gameBackgroundPath = "/assets/images/game-background.png";
     const symbolBackgroundPath = "/assets/images/squircle-yellow.svg";
@@ -129,11 +132,14 @@ export class LoadingView extends Container {
     };
   }
 
-  // Load the background music and return an HTMLAudioElement that can be played
-  private static loadMusic(): Promise<HTMLAudioElement> {
+  // Load the background music tracks and return them, ready to be played in sequence
+  private static loadMusic(): Promise<HTMLAudioElement[]> {
+    return Promise.all(LoadingView.MUSIC_PATHS.map(LoadingView.loadMusicTrack));
+  }
+
+  private static loadMusicTrack(path: string): Promise<HTMLAudioElement> {
     return new Promise((resolve, reject) => {
-      const audio = new Audio(LoadingView.MUSIC_PATH);
-      audio.loop = true;
+      const audio = new Audio(path);
       // Some browsers (Safari in particular) are inconsistent about
       // autoplay/gesture handling for media elements that aren't in the DOM.
       audio.style.display = "none";
@@ -143,8 +149,7 @@ export class LoadingView extends Container {
       });
       audio.addEventListener(
         "error",
-        () =>
-          reject(new Error(`Failed to load music: ${LoadingView.MUSIC_PATH}`)),
+        () => reject(new Error(`Failed to load music: ${path}`)),
         { once: true },
       );
       audio.load();
