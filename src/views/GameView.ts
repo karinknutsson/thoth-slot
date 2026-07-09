@@ -1,4 +1,4 @@
-import { Container, Graphics, Sprite, Text, Texture } from "pixi.js";
+import { Container, Graphics, Sprite, Text, Texture, Ticker } from "pixi.js";
 import { ReelView } from "./ReelView";
 import { GameConfig } from "../config/GameConfig";
 
@@ -27,6 +27,9 @@ export class GameView extends Container {
   private static readonly SPIN_BUTTON_LABEL_LETTER_SPACING = 8;
   private static readonly SPIN_BUTTON_ACTIVE_COLOR = 0xed1c1c;
   private static readonly SPIN_BUTTON_DISABLED_COLOR = 0x808080;
+  private static readonly WIN_CELEBRATION_SCALE = 1.5;
+  private static readonly WIN_CELEBRATION_GROW_MS = 200;
+  private static readonly WIN_CELEBRATION_SHRINK_MS = 300;
 
   private readonly imageWidth = 3080;
   private readonly imageHeight = 2320;
@@ -128,7 +131,7 @@ export class GameView extends Container {
         fill: 0xffffff,
         fontSize: 24,
         fontFamily: "Inter",
-        fontWeight: "800",
+        fontWeight: "700",
         letterSpacing: GameView.SPIN_BUTTON_LABEL_LETTER_SPACING,
       },
     });
@@ -197,6 +200,71 @@ export class GameView extends Container {
 
   updateWin(amount: number): void {
     this.winValue.text = `${amount}`;
+  }
+
+  // Updates the win amount and pops it up to a larger size before settling
+  // back down, drawing attention to the new total as it lands
+  async celebrateWin(amount: number): Promise<void> {
+    this.winValue.text = `${amount}`;
+
+    // The text's anchor pins its top-right corner in place, so scaling it
+    // directly grows left/down from that corner. Capture its unscaled size
+    // and anchor position up front and re-center the anchor point every
+    // frame so it visually grows outward from its own center instead.
+    const baseWidth = this.winValue.width;
+    const baseHeight = this.winValue.height;
+    const anchorX = this.winValue.position.x;
+    const anchorY = this.winValue.position.y;
+
+    await this.tweenWinValueScale(
+      GameView.WIN_CELEBRATION_SCALE,
+      GameView.WIN_CELEBRATION_GROW_MS,
+      baseWidth,
+      baseHeight,
+      anchorX,
+      anchorY,
+    );
+    await this.tweenWinValueScale(
+      1,
+      GameView.WIN_CELEBRATION_SHRINK_MS,
+      baseWidth,
+      baseHeight,
+      anchorX,
+      anchorY,
+    );
+  }
+
+  private tweenWinValueScale(
+    targetScale: number,
+    durationMs: number,
+    baseWidth: number,
+    baseHeight: number,
+    anchorX: number,
+    anchorY: number,
+  ): Promise<void> {
+    return new Promise((resolve) => {
+      const startScale = this.winValue.scale.x;
+      let elapsed = 0;
+
+      const onTick = (ticker: Ticker): void => {
+        elapsed += ticker.deltaMS;
+        const t = Math.min(elapsed / durationMs, 1);
+        const scale = startScale + (targetScale - startScale) * t;
+
+        this.winValue.scale.set(scale);
+        this.winValue.position.set(
+          anchorX + (baseWidth * (scale - 1)) / 2,
+          anchorY - (baseHeight * (scale - 1)) / 2,
+        );
+
+        if (t >= 1) {
+          Ticker.shared.remove(onTick);
+          resolve();
+        }
+      };
+
+      Ticker.shared.add(onTick);
+    });
   }
 
   setSpinButtonEnabled(enabled: boolean): void {

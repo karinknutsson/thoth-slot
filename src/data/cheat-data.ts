@@ -6,22 +6,35 @@ export const cheats: Record<string, string[][]> = {
     ["thoth", "urn", "horus"],
     ["vase", "scarab", "sphinx"],
   ],
-  middleRow: [
+  topRow3Urn: [
+    ["urn", "sphinx", "horus"],
+    ["urn", "scarab", "vase"],
+    ["urn", "scarab", "anubis"],
+    ["urn", "scarab", "horus"],
+    ["vase", "crookAndFlail", "sphinx"],
+  ],
+  middleRow3Scarab: [
     ["anubis", "urn", "urn"],
     ["horus", "scarab", "vase"],
     ["sphinx", "scarab", "anubis"],
     ["urn", "scarab", "horus"],
     ["vase", "crookAndFlail", "sphinx"],
   ],
-  diagonalRow: [
+  diagonalRow3Anubis: [
     ["anubis", "urn", "urn"],
     ["horus", "anubis", "vase"],
     ["sphinx", "thoth", "anubis"],
     ["urn", "thoth", "horus"],
     ["vase", "crookAndFlail", "sphinx"],
   ],
-
-  jackpot: [
+  bottomRow5Urn: [
+    ["vase", "sphinx", "urn"],
+    ["scarab", "anubis", "urn"],
+    ["crookAndFlail", "sphinx", "urn"],
+    ["urn", "scarab", "urn"],
+    ["thoth", "crookAndFlail", "urn"],
+  ],
+  middleRow5Thoth: [
     ["urn", "thoth", "vase"],
     ["horus", "thoth", "anubis"],
     ["sphinx", "thoth", "urn"],

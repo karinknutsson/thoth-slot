@@ -34,6 +34,7 @@ async function createApp(): Promise<void> {
     balanceWinBackground: balanceWinBackgroundTexture,
     spinButtonBackground: spinButtonBackgroundTexture,
     music,
+    sounds,
   } = await LoadingView.loadAssets(paytable.symbols, (progress) =>
     loadingView.setProgress(progress),
   );
@@ -60,8 +61,17 @@ async function createApp(): Promise<void> {
   );
   gameView.updateBalance(model.balance);
 
+  // Start the background music now that the game view is showing
+  const audioController = new AudioController(music, sounds);
+  audioController.playWithAutoplayFallback();
+
   // Create the spin controller to handle the game logic
-  const spinController = new SpinController(model, backend, gameView);
+  const spinController = new SpinController(
+    model,
+    backend,
+    gameView,
+    audioController,
+  );
 
   gameView.spinButton.on("pointertap", () => {
     gameView.setSpinButtonEnabled(false);
@@ -77,10 +87,6 @@ async function createApp(): Promise<void> {
     );
     app.stage.addChild(cheatView);
   }
-
-  // Start the background music now that the game view is showing
-  const audioController = new AudioController(music);
-  audioController.playWithAutoplayFallback();
 
   if (GameConfig.showAudioMenu) {
     const audioView = new AudioView(

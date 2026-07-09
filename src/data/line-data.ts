@@ -74,6 +74,42 @@ export const lines: Line[] = [
     rowPerReel: [2, 2, 2],
   },
   {
+    id: "horizontal4Reels1to4Top",
+    name: "Reels 1-4 Top Row",
+    startReel: 0,
+    rowPerReel: [0, 0, 0, 0],
+  },
+  {
+    id: "horizontal4Reels1to4Middle",
+    name: "Reels 1-4 Middle Row",
+    startReel: 0,
+    rowPerReel: [1, 1, 1, 1],
+  },
+  {
+    id: "horizontal4Reels1to4Bottom",
+    name: "Reels 1-4 Bottom Row",
+    startReel: 0,
+    rowPerReel: [2, 2, 2, 2],
+  },
+  {
+    id: "horizontal4Reels2to5Top",
+    name: "Reels 2-5 Top Row",
+    startReel: 1,
+    rowPerReel: [0, 0, 0, 0],
+  },
+  {
+    id: "horizontal4Reels2to5Middle",
+    name: "Reels 2-5 Middle Row",
+    startReel: 1,
+    rowPerReel: [1, 1, 1, 1],
+  },
+  {
+    id: "horizontal4Reels2to5Bottom",
+    name: "Reels 2-5 Bottom Row",
+    startReel: 1,
+    rowPerReel: [2, 2, 2, 2],
+  },
+  {
     id: "diagonalReels1to3DownRight",
     name: "Reels 1-3 Diagonal Down",
     startReel: 0,

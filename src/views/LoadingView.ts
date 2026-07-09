@@ -20,6 +20,12 @@ export class LoadingView extends Container {
     "/assets/music/egypt-desert-music-01.mp3",
     "/assets/music/egypt-desert-music-02.mp3",
   ];
+  private static readonly SOUND_PATHS = [
+    "/assets/sounds/magic-spell-3.mp3",
+    "/assets/sounds/magic-spell-5.mp3",
+    "/assets/sounds/magic-spell-win.mp3",
+    "/assets/sounds/magic-twinkle.mp3",
+  ];
 
   private barWidth = LoadingView.BAR_WIDTH_DESKTOP;
   private barHeight = LoadingView.BAR_HEIGHT_DESKTOP;
@@ -88,9 +94,10 @@ export class LoadingView extends Container {
     balanceWinBackground: Texture;
     spinButtonBackground: Texture;
     music: HTMLAudioElement[];
+    sounds: Record<string, HTMLAudioElement>;
   }> {
     const gameBackgroundPath = "/assets/images/game-background.png";
-    const symbolBackgroundPath = "/assets/images/squircle-yellow.svg";
+    const symbolBackgroundPath = "/assets/images/squircles/yellow-gradient.svg";
     const balanceWinBackgroundPath =
       "/assets/images/balance-win-background.png";
     const spinButtonBackgroundPath =
@@ -102,8 +109,8 @@ export class LoadingView extends Container {
     }
     const symbolPaths = Array.from(symbolPathToId.keys());
 
-    // Load all textures and music concurrently, reporting progress if a callback is provided
-    const [textures, music] = await Promise.all([
+    // Load all textures, music, and sounds concurrently, reporting progress if a callback is provided
+    const [textures, music, sounds] = await Promise.all([
       Assets.load(
         [
           gameBackgroundPath,
@@ -115,6 +122,7 @@ export class LoadingView extends Container {
         onProgress,
       ),
       LoadingView.loadMusic(),
+      LoadingView.loadSounds(),
     ]);
 
     const symbolTextureMap: Record<string, Texture> = {};
@@ -129,15 +137,36 @@ export class LoadingView extends Container {
       balanceWinBackground: textures[balanceWinBackgroundPath],
       spinButtonBackground: textures[spinButtonBackgroundPath],
       music,
+      sounds,
     };
   }
 
   // Load the background music tracks and return them, ready to be played in sequence
   private static loadMusic(): Promise<HTMLAudioElement[]> {
-    return Promise.all(LoadingView.MUSIC_PATHS.map(LoadingView.loadMusicTrack));
+    return Promise.all(
+      LoadingView.MUSIC_PATHS.map(LoadingView.loadAudioElement),
+    );
   }
 
-  private static loadMusicTrack(path: string): Promise<HTMLAudioElement> {
+  // Load the one-shot sound effects, keyed by file name without extension
+  private static async loadSounds(): Promise<Record<string, HTMLAudioElement>> {
+    const audios = await Promise.all(
+      LoadingView.SOUND_PATHS.map(LoadingView.loadAudioElement),
+    );
+
+    const sounds: Record<string, HTMLAudioElement> = {};
+    LoadingView.SOUND_PATHS.forEach((path, index) => {
+      const name = path
+        .split("/")
+        .pop()!
+        .replace(/\.[^.]+$/, "");
+      sounds[name] = audios[index];
+    });
+
+    return sounds;
+  }
+
+  private static loadAudioElement(path: string): Promise<HTMLAudioElement> {
     return new Promise((resolve, reject) => {
       const audio = new Audio(path);
       // Some browsers (Safari in particular) are inconsistent about
@@ -149,7 +178,7 @@ export class LoadingView extends Container {
       });
       audio.addEventListener(
         "error",
-        () => reject(new Error(`Failed to load music: ${path}`)),
+        () => reject(new Error(`Failed to load audio: ${path}`)),
         { once: true },
       );
       audio.load();
