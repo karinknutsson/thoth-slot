@@ -6,13 +6,21 @@ export const cheats: Record<string, string[][]> = {
     ["thoth", "urn", "horus"],
     ["vase", "scarab", "sphinx"],
   ],
-  middleRowWin: [
+  middleRow: [
     ["anubis", "urn", "urn"],
-    ["horus", "thoth", "vase"],
+    ["horus", "scarab", "vase"],
+    ["sphinx", "scarab", "anubis"],
+    ["urn", "scarab", "horus"],
+    ["vase", "crookAndFlail", "sphinx"],
+  ],
+  diagonalRow: [
+    ["anubis", "urn", "urn"],
+    ["horus", "anubis", "vase"],
     ["sphinx", "thoth", "anubis"],
     ["urn", "thoth", "horus"],
     ["vase", "crookAndFlail", "sphinx"],
   ],
+
   jackpot: [
     ["urn", "thoth", "vase"],
     ["horus", "thoth", "anubis"],
