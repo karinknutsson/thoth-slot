@@ -6,11 +6,12 @@ import {
   Texture,
   Ticker,
 } from "pixi.js";
+import { GameConfig } from "../config/GameConfig";
 
 type SpinPhase = "idle" | "spinning" | "stopping" | "settling";
 
 export class ReelView extends Container {
-  static readonly VISIBLE_SYMBOLS = 3;
+  static readonly VISIBLE_SYMBOLS = GameConfig.reels.visibleSymbols;
   private static readonly STRIP_LENGTH = ReelView.VISIBLE_SYMBOLS + 1;
   private static readonly BACKGROUND_COLOR_TOP = 0xa9510c;
   private static readonly BACKGROUND_COLOR_BOTTOM = 0x75310e;
@@ -18,14 +19,6 @@ export class ReelView extends Container {
   private static readonly ICON_SCALE = 0.8;
   private static readonly SYMBOL_BACKGROUND_ALPHA = 0.5;
   private static readonly SYMBOL_BACKGROUND_SCALE = 1.5;
-  private static readonly BASE_SPIN_SPEED = 3200;
-  private static readonly SPIN_SPEED_AMPLITUDE = 1400;
-  private static readonly SPIN_OSCILLATION_PERIOD_MS = 2150;
-  private static readonly SPIN_UP_DURATION_MS = 200;
-  private static readonly SPIN_DOWN_DURATION_MS = 650;
-  private static readonly SPIN_DOWN_CREEP_FACTOR = 0.4;
-  private static readonly SETTLE_DURATION_MS = 120;
-  private static readonly SETTLE_OVERSHOOT_FRACTION = 0.05;
 
   private readonly background: Graphics;
   private readonly contentMask: Graphics;
@@ -34,16 +27,19 @@ export class ReelView extends Container {
   private readonly textureMap: Record<string, Texture>;
   private readonly weightedPool: string[];
 
-  // symbol ids for rows -1..VISIBLE_SYMBOLS-1 (top-to-bottom), where row -1
-  // is an offscreen buffer symbol scrolling in from above
+  // The current symbol IDs in the strip, top to bottom. The first one is
+  // offscreen above the reel, the last one is offscreen below the reel.
   private stripIds: string[];
 
+  // The current phase of the reel's spin, and how long it's been in that phase.
   private phase: SpinPhase = "idle";
   private phaseElapsedMs = 0;
-  // elapsed time since startSpin(), kept running across the spinning ->
-  // stopping transition so the sine oscillation phase stays continuous
   private continuousElapsedMs = 0;
+
+  // The current vertical offset of the strip, in pixels, from its resting position.
   private offsetY = 0;
+
+  // When stopping, the final symbols to land on, in bottom-to-top order.
   private finalQueue: string[] | null = null;
   private finalShiftPending = false;
   private onSettled: (() => void) | null = null;
@@ -159,13 +155,13 @@ export class ReelView extends Container {
   // past its resting spot and spring back, instead of snapping to a stop.
   private updateSettle(): void {
     const settleT = Math.min(
-      this.phaseElapsedMs / ReelView.SETTLE_DURATION_MS,
+      this.phaseElapsedMs / GameConfig.spin.settleDurationMs,
       1,
     );
     this.offsetY =
       Math.sin(Math.PI * settleT) *
       this.stepY *
-      ReelView.SETTLE_OVERSHOOT_FRACTION;
+      GameConfig.spin.settleOvershootFraction;
 
     if (settleT >= 1) {
       this.finalize();
@@ -175,7 +171,7 @@ export class ReelView extends Container {
   private currentSpeed(): number {
     if (this.phase === "spinning") {
       const rampT = Math.min(
-        this.phaseElapsedMs / ReelView.SPIN_UP_DURATION_MS,
+        this.phaseElapsedMs / GameConfig.spin.upDurationMs,
         1,
       );
       const envelope = this.easeInOutSine(rampT);
@@ -184,12 +180,12 @@ export class ReelView extends Container {
 
     if (this.phase === "stopping") {
       const decayT = Math.min(
-        this.phaseElapsedMs / ReelView.SPIN_DOWN_DURATION_MS,
+        this.phaseElapsedMs / GameConfig.spin.downDurationMs,
         1,
       );
       const envelope = Math.max(
         1 - this.easeInCubic(decayT),
-        ReelView.SPIN_DOWN_CREEP_FACTOR,
+        GameConfig.spin.downCreepFactor,
       );
       return this.oscillatingSpeed(envelope);
     }
@@ -202,13 +198,13 @@ export class ReelView extends Container {
   // envelope (0..1) fades the wave in on spin-up and back out on spin-down.
   private oscillatingSpeed(envelope: number): number {
     const wave = Math.sin(
-      (this.continuousElapsedMs / ReelView.SPIN_OSCILLATION_PERIOD_MS) *
+      (this.continuousElapsedMs / GameConfig.spin.oscillationPeriodMs) *
         Math.PI *
         2,
     );
     const speed =
       envelope *
-      (ReelView.BASE_SPIN_SPEED + wave * ReelView.SPIN_SPEED_AMPLITUDE);
+      (GameConfig.spin.baseSpeed + wave * GameConfig.spin.speedAmplitude);
 
     return Math.max(speed, 0);
   }
@@ -225,9 +221,7 @@ export class ReelView extends Container {
     return -(Math.cos(Math.PI * t) - 1) / 2;
   }
 
-  // Shift the strip down by one row, pulling in a new symbol at the top.
-  // While stopping, the final symbols are fed in bottom-to-top so the reel
-  // lands exactly on them once the queue drains.
+  // Shift the strip down by one row, pulling in a new symbol at the top
   private shiftStrip(): void {
     const usingFinal = !!this.finalQueue && this.finalQueue.length > 0;
     const nextId = usingFinal
@@ -260,6 +254,7 @@ export class ReelView extends Container {
     this.onSettled = null;
   }
 
+  // Render the strip's symbols and their backgrounds based on the current strip IDs and the vertical offset
   private renderStrip(): void {
     this.stripIds.forEach((id, index) => {
       const row = index - 1;

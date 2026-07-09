@@ -1,13 +1,12 @@
 import { Container, Graphics, Text, Assets, Sprite, Texture } from "pixi.js";
 import type Symbol from "../types/symbol.interface";
+import { GameConfig } from "../config/GameConfig";
 
 export class LoadingView extends Container {
-  private static readonly MOBILE_BREAKPOINT = 768;
   private static readonly BAR_WIDTH_MOBILE = 200;
   private static readonly BAR_HEIGHT_MOBILE = 12;
   private static readonly BAR_WIDTH_DESKTOP = 320;
   private static readonly BAR_HEIGHT_DESKTOP = 20;
-  private static readonly SYMBOL_COUNT = 16;
   private static readonly PAGE_BACKGROUND_PATH =
     "/assets/images/page-background.jpg";
   private static readonly SILHOUETTE_PATH =
@@ -177,7 +176,7 @@ export class LoadingView extends Container {
   }
 
   private resize(): void {
-    const isMobile = window.innerWidth < LoadingView.MOBILE_BREAKPOINT;
+    const isMobile = window.innerWidth < GameConfig.layout.mobileBreakpoint;
 
     // Scale the page background to cover the entire window while maintaining its aspect ratio
     const scale = Math.max(

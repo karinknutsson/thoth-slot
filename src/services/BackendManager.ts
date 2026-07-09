@@ -1,5 +1,6 @@
 import type { Paytable } from "../types/paytable.interface";
 import type Win from "../types/win.interface";
+import { GameConfig } from "../config/GameConfig";
 
 export class BackendManager {
   private readonly paytable: Paytable;
@@ -35,13 +36,11 @@ export class BackendManager {
 
   // Generates a random grid of symbols based on the weighted pool
   public randomGrid(): string[][] {
-    const reelCount = 5;
-    const rowCount = 3;
     const grid: string[][] = [];
 
-    for (let reel = 0; reel < reelCount; reel++) {
+    for (let reel = 0; reel < GameConfig.reels.count; reel++) {
       const column: string[] = [];
-      for (let row = 0; row < rowCount; row++) {
+      for (let row = 0; row < GameConfig.reels.visibleSymbols; row++) {
         column.push(this.weightedRandomSymbol());
       }
       grid.push(column);

@@ -4,6 +4,7 @@ export class GameStateModel {
   private _balance: number;
   private _bet: number;
   private _phase: SpinPhase = "idle";
+  private _totalWin = 0;
 
   constructor(startingBalance: number, defaultBet: number) {
     this._balance = startingBalance;
@@ -16,6 +17,10 @@ export class GameStateModel {
 
   get bet(): number {
     return this._bet;
+  }
+
+  get totalWin(): number {
+    return this._totalWin;
   }
 
   get phase(): SpinPhase {
@@ -36,5 +41,6 @@ export class GameStateModel {
 
   addWins(amount: number): void {
     this._balance += amount;
+    this._totalWin += amount;
   }
 }
