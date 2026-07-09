@@ -5,6 +5,7 @@ import { GameConfig } from "../config/GameConfig";
 export class BackendManager {
   private readonly paytable: Paytable;
   private readonly weightedPool: string[];
+  private cheatGrid: string[][] | null = null;
 
   constructor(paytable: Paytable) {
     this.paytable = paytable;
@@ -36,6 +37,8 @@ export class BackendManager {
 
   // Generates a random grid of symbols based on the weighted pool
   public randomGrid(): string[][] {
+    if (this.cheatGrid) return this.cheatGrid;
+
     const grid: string[][] = [];
 
     for (let reel = 0; reel < GameConfig.reels.count; reel++) {
