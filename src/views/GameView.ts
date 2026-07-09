@@ -14,12 +14,17 @@ export class GameView extends Container {
   private static readonly CONTENT_PADDING_BOTTOM = 130;
   private static readonly TITLE_TOP_MARGIN_RATIO = 0.1;
   private static readonly BALANCE_WIN_WIDTH_RATIO = 0.27;
-  private static readonly BALANCE_WIN_TOP_MARGIN = 24;
   private static readonly BALANCE_WIN_MARGIN_X = 30;
   private static readonly BALANCE_WIN_MARGIN_Y = 50;
   private static readonly BALANCE_WIN_TEXT_PADDING = 20;
   private static readonly BALANCE_WIN_TEXT_GAP = 20;
-  private static readonly BALANCE_WIN_FONT_SIZE = 120;
+  private static readonly BALANCE_WIN_FONT_SIZE = 95;
+  private static readonly SPIN_BUTTON_HEIGHT_MULTIPLIER = 1.7;
+  private static readonly SPIN_BUTTON_MARGIN = 188;
+  private static readonly SPIN_BUTTON_LABEL_FONT_SIZE = 175;
+  private static readonly SPIN_BUTTON_LABEL_LETTER_SPACING = 4;
+  private static readonly SPIN_BUTTON_ACTIVE_COLOR = 0xd91e1e;
+  private static readonly SPIN_BUTTON_DISABLED_COLOR = 0x808080;
 
   private readonly imageWidth = 3080;
   private readonly imageHeight = 2320;
@@ -30,8 +35,14 @@ export class GameView extends Container {
   private readonly balanceWinContentBackground: Graphics;
 
   readonly spinButton: Container;
-  private readonly spinButtonBackground: Graphics;
+  private readonly spinButtonFrame: Sprite;
+  private readonly spinButtonCircle: Graphics;
   private readonly spinButtonLabel: Text;
+  private spinButtonEnabled = true;
+  private spinCircleCx = 0;
+  private spinCircleCy = 0;
+  private spinCircleRx = 0;
+  private spinCircleRy = 0;
 
   readonly reels: ReelView[];
 
@@ -48,6 +59,7 @@ export class GameView extends Container {
     weightedPool: string[],
     symbolBackgroundTexture: Texture,
     balanceWinBackgroundTexture: Texture,
+    spinButtonBackgroundTexture: Texture,
   ) {
     super();
 
@@ -89,47 +101,72 @@ export class GameView extends Container {
     this.spinButton.eventMode = "static";
     this.spinButton.cursor = "pointer";
 
-    this.spinButtonBackground = new Graphics()
-      .roundRect(0, 0, 140, 60, 12)
-      .fill({ color: 0xfbd554 });
+    this.spinButtonFrame = new Sprite(spinButtonBackgroundTexture);
+    this.spinButtonFrame.anchor.set(0, 0);
+
+    this.spinButtonCircle = new Graphics();
 
     this.spinButtonLabel = new Text({
       text: "SPIN",
       style: {
-        fill: 0x1a1a22,
+        fill: 0xffffff,
         fontSize: 24,
-        fontFamily: "sans-serif",
-        fontWeight: "bold",
+        fontFamily: "Inter",
+        fontWeight: "800",
+        letterSpacing: GameView.SPIN_BUTTON_LABEL_LETTER_SPACING,
       },
     });
     this.spinButtonLabel.anchor.set(0.5);
-    this.spinButtonLabel.position.set(70, 30);
 
-    this.spinButton.addChild(this.spinButtonBackground, this.spinButtonLabel);
+    this.spinButton.addChild(
+      this.spinButtonFrame,
+      this.spinButtonCircle,
+      this.spinButtonLabel,
+    );
     this.addChild(this.spinButton);
 
     this.balanceLabel = new Text({
       text: "Balance:",
-      style: { fill: 0xfbd554, fontSize: 26, fontFamily: "Caesar Dressing" },
+      style: {
+        fill: 0xfbd554,
+        fontSize: 26,
+        fontFamily: "Inter",
+        fontWeight: "700",
+      },
     });
     this.addChild(this.balanceLabel);
 
     this.balanceValue = new Text({
       text: "0",
-      style: { fill: 0xfbd554, fontSize: 26, fontFamily: "Caesar Dressing" },
+      style: {
+        fill: 0xfbd554,
+        fontSize: 26,
+        fontFamily: "Inter",
+        fontWeight: "700",
+      },
     });
     this.balanceValue.anchor.set(1, 0);
     this.addChild(this.balanceValue);
 
     this.winLabel = new Text({
       text: "Win:",
-      style: { fill: 0xfbd554, fontSize: 26, fontFamily: "Caesar Dressing" },
+      style: {
+        fill: 0xfbd554,
+        fontSize: 26,
+        fontFamily: "Inter",
+        fontWeight: "700",
+      },
     });
     this.addChild(this.winLabel);
 
     this.winValue = new Text({
       text: "0",
-      style: { fill: 0xfbd554, fontSize: 26, fontFamily: "Caesar Dressing" },
+      style: {
+        fill: 0xfbd554,
+        fontSize: 26,
+        fontFamily: "Inter",
+        fontWeight: "700",
+      },
     });
     this.winValue.anchor.set(1, 0);
     this.addChild(this.winValue);
@@ -148,7 +185,24 @@ export class GameView extends Container {
 
   setSpinButtonEnabled(enabled: boolean): void {
     this.spinButton.eventMode = enabled ? "static" : "none";
-    this.spinButton.alpha = enabled ? 1 : 0.5;
+    this.spinButtonEnabled = enabled;
+    this.drawSpinButtonCircle();
+  }
+
+  private drawSpinButtonCircle(): void {
+    const color = this.spinButtonEnabled
+      ? GameView.SPIN_BUTTON_ACTIVE_COLOR
+      : GameView.SPIN_BUTTON_DISABLED_COLOR;
+
+    this.spinButtonCircle
+      .clear()
+      .ellipse(
+        this.spinCircleCx,
+        this.spinCircleCy,
+        this.spinCircleRx,
+        this.spinCircleRy,
+      )
+      .fill({ color });
   }
 
   private resize(): void {
@@ -230,10 +284,13 @@ export class GameView extends Container {
     const balanceWinScale = balanceWinWidth / balanceWinTexture.width;
     const balanceWinHeight = balanceWinTexture.height * balanceWinScale;
 
-    // Aligned with the board's own left edge, not the padded reel content area
+    // Vertically centered in the space below the board, aligned with the
+    // board's own left edge (not the padded reel content area)
+    const footerTop = centerY + boardHeight / 2;
+    const footerCenterY = (footerTop + window.innerHeight) / 2;
+
     const balanceWinX = centerX - boardWidth / 2;
-    const balanceWinY =
-      centerY + boardHeight / 2 + GameView.BALANCE_WIN_TOP_MARGIN * scale;
+    const balanceWinY = footerCenterY - balanceWinHeight / 2;
 
     this.balanceWinBackground.width = balanceWinWidth;
     this.balanceWinBackground.height = balanceWinHeight;
@@ -274,5 +331,36 @@ export class GameView extends Container {
     this.balanceValue.position.set(textRightX, balanceRowY);
     this.winLabel.position.set(textLeftX, winRowY);
     this.winValue.position.set(textRightX, winRowY);
+
+    const spinButtonTexture = this.spinButtonFrame.texture;
+    const spinButtonSize =
+      balanceWinHeight * GameView.SPIN_BUTTON_HEIGHT_MULTIPLIER;
+    const spinButtonScale = spinButtonSize / spinButtonTexture.width;
+    const spinButtonHeight = spinButtonTexture.height * spinButtonScale;
+
+    // Aligned with the board's own right edge, mirroring the balance/win panel
+    const spinButtonX = centerX + boardWidth / 2 - spinButtonSize;
+    const spinButtonY = balanceWinCenterY - spinButtonHeight / 2;
+
+    this.spinButtonFrame.width = spinButtonSize;
+    this.spinButtonFrame.height = spinButtonHeight;
+    this.spinButton.position.set(spinButtonX, spinButtonY);
+
+    const spinMargin = GameView.SPIN_BUTTON_MARGIN * spinButtonScale;
+
+    const circleWidth = spinButtonSize - spinMargin * 2;
+    const circleHeight = spinButtonHeight - spinMargin * 2;
+
+    this.spinCircleCx = spinMargin + circleWidth / 2;
+    this.spinCircleCy = spinMargin + circleHeight / 2;
+    this.spinCircleRx = circleWidth / 2;
+    this.spinCircleRy = circleHeight / 2;
+    this.drawSpinButtonCircle();
+
+    this.spinButtonLabel.style.fontSize =
+      GameView.SPIN_BUTTON_LABEL_FONT_SIZE * spinButtonScale;
+    this.spinButtonLabel.style.letterSpacing =
+      GameView.SPIN_BUTTON_LABEL_LETTER_SPACING * spinButtonScale;
+    this.spinButtonLabel.position.set(this.spinCircleCx, this.spinCircleCy);
   }
 }

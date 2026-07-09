@@ -70,6 +70,7 @@ export class LoadingView extends Container {
       Assets.load(LoadingView.PAGE_BACKGROUND_PATH),
       Assets.load(LoadingView.SILHOUETTE_PATH),
       document.fonts.load('24px "Caesar Dressing"'),
+      document.fonts.load('800 24px "Inter"'),
     ]);
     return new LoadingView(pageBackgroundTexture, silhouetteTexture);
   }
@@ -82,12 +83,15 @@ export class LoadingView extends Container {
     symbols: Record<string, Texture>;
     symbolBackground: Texture;
     balanceWinBackground: Texture;
+    spinButtonBackground: Texture;
     music: HTMLAudioElement;
   }> {
     const gameBackgroundPath = "/assets/images/game-background.png";
     const symbolBackgroundPath = "/assets/images/squircle-yellow.svg";
     const balanceWinBackgroundPath =
       "/assets/images/balance-win-background.png";
+    const spinButtonBackgroundPath =
+      "/assets/images/gold-star-spin-background.png";
 
     const symbolPathToId = new Map<string, string>();
     for (const symbol of symbols) {
@@ -102,6 +106,7 @@ export class LoadingView extends Container {
           gameBackgroundPath,
           symbolBackgroundPath,
           balanceWinBackgroundPath,
+          spinButtonBackgroundPath,
           ...symbolPaths,
         ],
         onProgress,
@@ -119,6 +124,7 @@ export class LoadingView extends Container {
       symbols: symbolTextureMap,
       symbolBackground: textures[symbolBackgroundPath],
       balanceWinBackground: textures[balanceWinBackgroundPath],
+      spinButtonBackground: textures[spinButtonBackgroundPath],
       music,
     };
   }
