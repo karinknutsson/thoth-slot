@@ -46,6 +46,7 @@ async function createApp(): Promise<void> {
       gameBackground: gameBackgroundTexture,
       symbols: symbolTextures,
       symbolBackground: symbolBackgroundTexture,
+      balanceWinBackground: balanceWinBackgroundTexture,
       music,
     },
   ] = await Promise.all([assetsPromise, fakeProgressPromise]);
@@ -61,6 +62,7 @@ async function createApp(): Promise<void> {
     symbolTextures,
     backend.getWeightedPool(),
     symbolBackgroundTexture,
+    balanceWinBackgroundTexture,
   );
   app.stage.addChild(gameView);
 
