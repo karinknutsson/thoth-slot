@@ -13,13 +13,15 @@ export class GameView extends Container {
   private static readonly CONTENT_PADDING_TOP = 140;
   private static readonly CONTENT_PADDING_BOTTOM = 130;
   private static readonly TITLE_TOP_MARGIN_RATIO = 0.1;
-  private static readonly BALANCE_WIN_WIDTH_RATIO = 0.27;
-  private static readonly BALANCE_WIN_MARGIN_X = 30;
-  private static readonly BALANCE_WIN_MARGIN_Y = 50;
-  private static readonly BALANCE_WIN_TEXT_PADDING = 20;
-  private static readonly BALANCE_WIN_TEXT_GAP = 20;
-  private static readonly BALANCE_WIN_FONT_SIZE = 95;
-  private static readonly SPIN_BUTTON_HEIGHT_MULTIPLIER = 1.7;
+  private static readonly PANEL_WIDTH_RATIO = 0.22;
+  private static readonly PANEL_WIDTH_RATIO_MOBILE = 0.44;
+  private static readonly PANEL_MARGIN_X = 30;
+  private static readonly PANEL_MARGIN_Y = 50;
+  private static readonly PANEL_TEXT_PADDING = 45;
+  private static readonly PANEL_FONT_SIZE = 75;
+  private static readonly SPIN_BUTTON_HEIGHT_MULTIPLIER_DESKTOP = 2.475;
+  private static readonly SPIN_BUTTON_HEIGHT_MULTIPLIER_COMPACT = 2.2;
+  private static readonly SPIN_BUTTON_HEIGHT_MULTIPLIER_MOBILE = 1.65;
   private static readonly SPIN_BUTTON_MARGIN = 188;
   private static readonly SPIN_BUTTON_LABEL_FONT_SIZE = 175;
   private static readonly SPIN_BUTTON_LABEL_LETTER_SPACING = 4;
@@ -31,8 +33,10 @@ export class GameView extends Container {
   private readonly background: Sprite;
   private readonly reelsBackground: Sprite;
   private readonly contentBackground: Graphics;
-  private readonly balanceWinBackground: Sprite;
-  private readonly balanceWinContentBackground: Graphics;
+  private readonly balancePanelBackground: Sprite;
+  private readonly balancePanelFill: Graphics;
+  private readonly winPanelBackground: Sprite;
+  private readonly winPanelFill: Graphics;
 
   readonly spinButton: Container;
   private readonly spinButtonFrame: Sprite;
@@ -74,16 +78,28 @@ export class GameView extends Container {
     this.contentBackground = new Graphics();
     this.addChild(this.contentBackground);
 
-    this.balanceWinBackground = new Sprite(balanceWinBackgroundTexture);
-    this.balanceWinBackground.anchor.set(0, 0);
-    this.addChild(this.balanceWinBackground);
+    this.balancePanelBackground = new Sprite(balanceWinBackgroundTexture);
+    this.balancePanelBackground.anchor.set(0, 0);
+    this.addChild(this.balancePanelBackground);
 
-    this.balanceWinContentBackground = new Graphics();
-    this.addChild(this.balanceWinContentBackground);
+    this.balancePanelFill = new Graphics();
+    this.addChild(this.balancePanelFill);
+
+    this.winPanelBackground = new Sprite(balanceWinBackgroundTexture);
+    this.winPanelBackground.anchor.set(0, 0);
+    this.addChild(this.winPanelBackground);
+
+    this.winPanelFill = new Graphics();
+    this.addChild(this.winPanelFill);
 
     this.titleLabel = new Text({
       text: "Th0th Sl0t",
-      style: { fill: 0xfbd554, fontSize: 48, fontFamily: "Caesar Dressing" },
+      style: {
+        fill: 0xfbd554,
+        fontSize: 48,
+        fontFamily: "Caesar Dressing",
+        align: "center",
+      },
     });
     this.titleLabel.anchor.set(0.5);
     this.addChild(this.titleLabel);
@@ -126,7 +142,7 @@ export class GameView extends Container {
     this.addChild(this.spinButton);
 
     this.balanceLabel = new Text({
-      text: "Balance:",
+      text: "BALANCE:",
       style: {
         fill: 0xfbd554,
         fontSize: 26,
@@ -149,7 +165,7 @@ export class GameView extends Container {
     this.addChild(this.balanceValue);
 
     this.winLabel = new Text({
-      text: "Win:",
+      text: "WIN:",
       style: {
         fill: 0xfbd554,
         fontSize: 26,
@@ -205,6 +221,45 @@ export class GameView extends Container {
       .fill({ color });
   }
 
+  private layoutPanel(
+    background: Sprite,
+    fill: Graphics,
+    label: Text,
+    value: Text,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    scale: number,
+  ): void {
+    background.width = width;
+    background.height = height;
+    background.position.set(x, y);
+
+    const marginX = GameView.PANEL_MARGIN_X * scale;
+    const marginY = GameView.PANEL_MARGIN_Y * scale;
+
+    fill
+      .clear()
+      .rect(
+        x + marginX,
+        y + marginY,
+        width - marginX * 2,
+        height - marginY * 2,
+      )
+      .fill({ color: GameView.REEL_GAP_COLOR });
+
+    const textInset =
+      (GameView.PANEL_MARGIN_X + GameView.PANEL_TEXT_PADDING) * scale;
+    const fontSize = GameView.PANEL_FONT_SIZE * scale;
+    label.style.fontSize = fontSize;
+    value.style.fontSize = fontSize;
+
+    const rowY = y + height / 2 - label.height / 2;
+    label.position.set(x + textInset, rowY);
+    value.position.set(x + width - textInset, rowY);
+  }
+
   private resize(): void {
     const pageScale = Math.max(
       window.innerWidth / this.imageWidth,
@@ -219,7 +274,8 @@ export class GameView extends Container {
     const centerY = window.innerHeight / 2;
 
     const isMobile = window.innerWidth < GameConfig.layout.mobileBreakpoint;
-    this.titleLabel.style.fontSize = isMobile ? 48 : 96;
+    this.titleLabel.text = isMobile ? "Th0th\nSl0t" : "Th0th Sl0t";
+    this.titleLabel.style.fontSize = 96;
     const titleTopMargin = window.innerHeight * GameView.TITLE_TOP_MARGIN_RATIO;
     this.titleLabel.position.set(
       centerX,
@@ -279,68 +335,104 @@ export class GameView extends Container {
       reel.position.set(startX + index * (reelWidth + reelGap), startY);
     });
 
-    const balanceWinTexture = this.balanceWinBackground.texture;
-    const balanceWinWidth = boardWidth * GameView.BALANCE_WIN_WIDTH_RATIO;
-    const balanceWinScale = balanceWinWidth / balanceWinTexture.width;
-    const balanceWinHeight = balanceWinTexture.height * balanceWinScale;
-
-    // Vertically centered in the space below the board, aligned with the
-    // board's own left edge (not the padded reel content area)
-    const footerTop = centerY + boardHeight / 2;
-    const footerCenterY = (footerTop + window.innerHeight) / 2;
-
-    const balanceWinX = centerX - boardWidth / 2;
-    const balanceWinY = footerCenterY - balanceWinHeight / 2;
-
-    this.balanceWinBackground.width = balanceWinWidth;
-    this.balanceWinBackground.height = balanceWinHeight;
-    this.balanceWinBackground.position.set(balanceWinX, balanceWinY);
-
-    const balanceWinMarginX = GameView.BALANCE_WIN_MARGIN_X * balanceWinScale;
-    const balanceWinMarginY = GameView.BALANCE_WIN_MARGIN_Y * balanceWinScale;
-
-    this.balanceWinContentBackground
-      .clear()
-      .rect(
-        balanceWinX + balanceWinMarginX,
-        balanceWinY + balanceWinMarginY,
-        balanceWinWidth - balanceWinMarginX * 2,
-        balanceWinHeight - balanceWinMarginY * 2,
-      )
-      .fill({ color: GameView.REEL_GAP_COLOR });
-
-    const textInset =
-      (GameView.BALANCE_WIN_MARGIN_X + GameView.BALANCE_WIN_TEXT_PADDING) *
-      balanceWinScale;
-    const textGap = GameView.BALANCE_WIN_TEXT_GAP * balanceWinScale;
-    const textLeftX = balanceWinX + textInset;
-    const textRightX = balanceWinX + balanceWinWidth - textInset;
-    const balanceWinCenterY = balanceWinY + balanceWinHeight / 2;
-
-    const balanceWinFontSize = GameView.BALANCE_WIN_FONT_SIZE * balanceWinScale;
-    this.balanceLabel.style.fontSize = balanceWinFontSize;
-    this.balanceValue.style.fontSize = balanceWinFontSize;
-    this.winLabel.style.fontSize = balanceWinFontSize;
-    this.winValue.style.fontSize = balanceWinFontSize;
-
-    const balanceRowY =
-      balanceWinCenterY - this.balanceLabel.height - textGap / 2;
-    const winRowY = balanceWinCenterY + textGap / 2;
-
-    this.balanceLabel.position.set(textLeftX, balanceRowY);
-    this.balanceValue.position.set(textRightX, balanceRowY);
-    this.winLabel.position.set(textLeftX, winRowY);
-    this.winValue.position.set(textRightX, winRowY);
-
+    const panelTexture = this.balancePanelBackground.texture;
     const spinButtonTexture = this.spinButtonFrame.texture;
-    const spinButtonSize =
-      balanceWinHeight * GameView.SPIN_BUTTON_HEIGHT_MULTIPLIER;
+
+    let panelWidth: number;
+    let panelScale: number;
+    let panelHeight: number;
+    let spinButtonSize: number;
+    let balancePanelX: number;
+    let balancePanelY: number;
+    let winPanelX: number;
+    let winPanelY: number;
+    let spinButtonX: number;
+    let spinButtonY: number;
+
+    if (isMobile) {
+      // Stacked vertically under the board: spin button, then balance, then
+      // win, spaced evenly (equal gaps before, between, and after them) across
+      // all of the space between the board and the bottom of the window
+      panelWidth = boardWidth * GameView.PANEL_WIDTH_RATIO_MOBILE;
+      panelScale = panelWidth / panelTexture.width;
+      panelHeight = panelTexture.height * panelScale;
+
+      spinButtonSize = panelHeight * GameView.SPIN_BUTTON_HEIGHT_MULTIPLIER_MOBILE;
+      const spinButtonScale = spinButtonSize / spinButtonTexture.width;
+      const spinButtonHeight = spinButtonTexture.height * spinButtonScale;
+
+      const stackTop = centerY + boardHeight / 2;
+      const stackAvailableHeight = window.innerHeight - stackTop;
+      const stackContentHeight = spinButtonHeight + panelHeight * 2;
+      const stackGap = (stackAvailableHeight - stackContentHeight) / 4;
+
+      spinButtonX = centerX - spinButtonSize / 2;
+      spinButtonY = stackTop + stackGap;
+
+      balancePanelX = centerX - panelWidth / 2;
+      balancePanelY = spinButtonY + spinButtonHeight + stackGap;
+
+      winPanelX = centerX - panelWidth / 2;
+      winPanelY = balancePanelY + panelHeight + stackGap;
+    } else {
+      // One row below the board: balance panel, spin button, and win panel
+      // spaced evenly (equal gaps before, between, and after them) across
+      // the game background's width
+      panelWidth = boardWidth * GameView.PANEL_WIDTH_RATIO;
+      panelScale = panelWidth / panelTexture.width;
+      panelHeight = panelTexture.height * panelScale;
+
+      const spinButtonMultiplier =
+        window.innerWidth < GameConfig.layout.desktopBreakpoint
+          ? GameView.SPIN_BUTTON_HEIGHT_MULTIPLIER_COMPACT
+          : GameView.SPIN_BUTTON_HEIGHT_MULTIPLIER_DESKTOP;
+      spinButtonSize = panelHeight * spinButtonMultiplier;
+
+      const footerTop = centerY + boardHeight / 2;
+      const footerCenterY = (footerTop + window.innerHeight) / 2;
+
+      const rowLeft = centerX - boardWidth / 2;
+      const rowContentWidth = panelWidth * 2 + spinButtonSize;
+      const rowGap = (boardWidth - rowContentWidth) / 4;
+
+      balancePanelX = rowLeft + rowGap;
+      spinButtonX = balancePanelX + panelWidth + rowGap;
+      winPanelX = spinButtonX + spinButtonSize + rowGap;
+
+      const spinButtonScale = spinButtonSize / spinButtonTexture.width;
+      const spinButtonHeight = spinButtonTexture.height * spinButtonScale;
+
+      balancePanelY = footerCenterY - panelHeight / 2;
+      winPanelY = balancePanelY;
+      spinButtonY = footerCenterY - spinButtonHeight / 2;
+    }
+
+    this.layoutPanel(
+      this.balancePanelBackground,
+      this.balancePanelFill,
+      this.balanceLabel,
+      this.balanceValue,
+      balancePanelX,
+      balancePanelY,
+      panelWidth,
+      panelHeight,
+      panelScale,
+    );
+
+    this.layoutPanel(
+      this.winPanelBackground,
+      this.winPanelFill,
+      this.winLabel,
+      this.winValue,
+      winPanelX,
+      winPanelY,
+      panelWidth,
+      panelHeight,
+      panelScale,
+    );
+
     const spinButtonScale = spinButtonSize / spinButtonTexture.width;
     const spinButtonHeight = spinButtonTexture.height * spinButtonScale;
-
-    // Aligned with the board's own right edge, mirroring the balance/win panel
-    const spinButtonX = centerX + boardWidth / 2 - spinButtonSize;
-    const spinButtonY = balanceWinCenterY - spinButtonHeight / 2;
 
     this.spinButtonFrame.width = spinButtonSize;
     this.spinButtonFrame.height = spinButtonHeight;
