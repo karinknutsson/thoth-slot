@@ -12,7 +12,7 @@ export class GameView extends Container {
   private static readonly CONTENT_PADDING_LEFT_RIGHT = 80;
   private static readonly CONTENT_PADDING_TOP = 140;
   private static readonly CONTENT_PADDING_BOTTOM = 130;
-  private static readonly TITLE_TOP_MARGIN_RATIO = 0.1;
+  private static readonly TITLE_FONT_SIZE = 115.2;
   private static readonly PANEL_WIDTH_RATIO = 0.22;
   private static readonly PANEL_WIDTH_RATIO_MOBILE = 0.44;
   private static readonly PANEL_MARGIN_X = 30;
@@ -274,13 +274,6 @@ export class GameView extends Container {
     const centerY = window.innerHeight / 2;
 
     const isMobile = window.innerWidth < GameConfig.layout.mobileBreakpoint;
-    this.titleLabel.text = isMobile ? "Th0th\nSl0t" : "Th0th Sl0t";
-    this.titleLabel.style.fontSize = 96;
-    const titleTopMargin = window.innerHeight * GameView.TITLE_TOP_MARGIN_RATIO;
-    this.titleLabel.position.set(
-      centerX,
-      titleTopMargin + this.titleLabel.height / 2,
-    );
 
     const boardWidthRatio =
       window.innerWidth < GameConfig.layout.mobileBreakpoint
@@ -293,6 +286,12 @@ export class GameView extends Container {
     const boardWidth = window.innerWidth * boardWidthRatio;
     const scale = boardWidth / boardTexture.width;
     const boardHeight = boardTexture.height * scale;
+
+    // Centered between the top of the window and the top of the game board
+    this.titleLabel.text = isMobile ? "Th0th\nSl0t" : "Th0th Sl0t";
+    this.titleLabel.style.fontSize = GameView.TITLE_FONT_SIZE;
+    const boardTop = centerY - boardHeight / 2;
+    this.titleLabel.position.set(centerX, boardTop / 2);
 
     this.reelsBackground.width = boardWidth;
     this.reelsBackground.height = boardHeight;
