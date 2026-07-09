@@ -1,13 +1,11 @@
 import { Container, Graphics, Sprite, Text, Texture } from "pixi.js";
 import { ReelView } from "./ReelView";
+import { GameConfig } from "../config/GameConfig";
 
 export class GameView extends Container {
-  private static readonly MOBILE_BREAKPOINT = 768;
-  private static readonly DESKTOP_BREAKPOINT = 1400;
   private static readonly BOARD_WIDTH_RATIO_DESKTOP = 0.6;
   private static readonly BOARD_WIDTH_RATIO_TABLET = 0.8;
   private static readonly BOARD_WIDTH_RATIO_MOBILE = 0.9;
-  private static readonly REEL_COUNT = 5;
   private static readonly SYMBOL_SPACING_RATIO = 0.15;
   private static readonly REEL_GAP = 32;
   private static readonly REEL_GAP_COLOR = 0x240902;
@@ -51,7 +49,7 @@ export class GameView extends Container {
     this.addChild(this.contentBackground);
 
     this.reels = Array.from(
-      { length: GameView.REEL_COUNT },
+      { length: GameConfig.reels.count },
       () =>
         new ReelView(symbolTextureMap, weightedPool, symbolBackgroundTexture),
     );
@@ -125,9 +123,9 @@ export class GameView extends Container {
     const centerY = window.innerHeight / 2;
 
     const boardWidthRatio =
-      window.innerWidth < GameView.MOBILE_BREAKPOINT
+      window.innerWidth < GameConfig.layout.mobileBreakpoint
         ? GameView.BOARD_WIDTH_RATIO_MOBILE
-        : window.innerWidth < GameView.DESKTOP_BREAKPOINT
+        : window.innerWidth < GameConfig.layout.desktopBreakpoint
           ? GameView.BOARD_WIDTH_RATIO_TABLET
           : GameView.BOARD_WIDTH_RATIO_DESKTOP;
 
@@ -166,8 +164,8 @@ export class GameView extends Container {
       symbolSize * ReelView.VISIBLE_SYMBOLS +
       (ReelView.VISIBLE_SYMBOLS - 1) * symbolSpacing;
     const reelWidth =
-      (contentWidth - (GameView.REEL_COUNT - 1) * reelGap) /
-      GameView.REEL_COUNT;
+      (contentWidth - (GameConfig.reels.count - 1) * reelGap) /
+      GameConfig.reels.count;
 
     const startX = contentLeft;
     const startY = contentTop + (contentHeight - reelHeight) / 2;

@@ -6,6 +6,7 @@ import { BackendManager } from "./services/BackendManager";
 import { paytable } from "./data/paytable-data";
 import { SpinController } from "./controllers/SpinController";
 import { GameStateModel } from "./models/GameStateModel";
+import { GameConfig } from "./config/GameConfig";
 
 async function createApp(): Promise<void> {
   // Create a new application
@@ -63,8 +64,10 @@ async function createApp(): Promise<void> {
   );
   app.stage.addChild(gameView);
 
-  // Create the game state model with a starting balance of 1000 and a default bet of 1
-  const model = new GameStateModel(1000, 1);
+  const model = new GameStateModel(
+    GameConfig.balance.starting,
+    GameConfig.balance.defaultBet,
+  );
   gameView.updateBalance(model.balance);
 
   // Create the spin controller to handle the game logic
