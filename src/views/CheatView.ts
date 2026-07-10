@@ -61,6 +61,8 @@ export class CheatView extends Container {
     window.addEventListener("resize", () => this.resize());
   }
 
+  // Sets the active cheat item visually by changing its text color, and
+  // resets others to inactive color
   private setActive(key: string): void {
     for (const item of this.items) {
       item.text.style.fill =

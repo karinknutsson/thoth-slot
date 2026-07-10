@@ -8,7 +8,8 @@ export class CheatsController {
     this.backend = backend;
   }
 
-  // Selects a cheat by name and sets the corresponding cheat grid in the backend
+  // Selects a cheat by name and sets the corresponding cheat grid in the
+  // backend
   select(cheatName: string): void {
     const grid = cheats[cheatName];
     if (!grid) return;

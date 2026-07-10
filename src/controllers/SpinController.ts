@@ -22,7 +22,8 @@ export class SpinController {
     this.audio = audio;
   }
 
-  // Initiates a spin sequence, handling the entire process from deducting the bet to evaluating wins and updating the view
+  // Initiates a spin sequence, handling the entire process from deducting
+  // the bet to evaluating wins and updating the view
   async spin(): Promise<void> {
     if (!this.model.canSpin) return;
 

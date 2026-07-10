@@ -1,5 +1,8 @@
 import type Symbol from "../types/symbol.interface";
 
+// Weights are set inversely to payout-data.ts: symbols with the lowest
+// payout are the most common, and the highest-payout symbols are the
+// rarest
 export const symbols = [
   { id: "thoth", textureKey: "01", weight: 1 },
   { id: "horus", textureKey: "02", weight: 1 },

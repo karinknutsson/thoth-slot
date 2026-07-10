@@ -111,7 +111,8 @@ export class LoadingView extends Container {
     }
     const symbolPaths = Array.from(symbolPathToId.keys());
 
-    // Load all textures, music, and sounds concurrently, reporting progress if a callback is provided
+    // Load all textures, music, and sounds concurrently, reporting
+    // progress if a callback is provided
     const [textures, music, sounds] = await Promise.all([
       Assets.load(
         [
@@ -145,7 +146,8 @@ export class LoadingView extends Container {
     };
   }
 
-  // Load the background music tracks and return them, ready to be played in sequence
+  // Load the background music tracks and return them, ready to be played
+  // in sequence
   private static loadMusic(): Promise<HTMLAudioElement[]> {
     return Promise.all(
       LoadingView.MUSIC_PATHS.map(LoadingView.loadAudioElement),
@@ -219,7 +221,8 @@ export class LoadingView extends Container {
       .fill({ color: 0xfbd554 });
   }
 
-  // Set the position of the loading bar and its fill based on the center coordinates
+  // Set the position of the loading bar and its fill based on the center
+  // coordinates
   private setBarPosition(centerX: number, centerY: number): void {
     this.barBackground.position.set(centerX, centerY);
     this.barFill.position.set(
@@ -231,7 +234,8 @@ export class LoadingView extends Container {
   private resize(): void {
     const isMobile = window.innerWidth < GameConfig.layout.mobileBreakpoint;
 
-    // Scale the page background to cover the entire window while maintaining its aspect ratio
+    // Scale the page background to cover the entire window while
+    // maintaining its aspect ratio
     const scale = Math.max(
       window.innerWidth / this.pageBackground.texture.width,
       window.innerHeight / this.pageBackground.texture.height,

@@ -25,7 +25,8 @@ export const GameConfig = {
     // How long reels spin at full speed before the first one starts stopping
     minDurationMs: 1500,
 
-    // Delay between each reel's stop, so they settle left to right instead of all at once
+    // Delay between each reel's stop, so they settle left to right instead
+    // of all at once
     stopStaggerMs: 500,
 
     // Delay after the reels settle before the win amount updates and celebrates

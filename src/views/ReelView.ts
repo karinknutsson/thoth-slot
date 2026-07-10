@@ -40,7 +40,8 @@ export class ReelView extends Container {
   private phaseElapsedMs = 0;
   private continuousElapsedMs = 0;
 
-  // The current vertical offset of the strip, in pixels, from its resting position.
+  // The current vertical offset of the strip, in pixels, from its resting
+  // position.
   private offsetY = 0;
 
   // When stopping, the final symbols to land on, in bottom-to-top order.
@@ -170,7 +171,7 @@ export class ReelView extends Container {
   };
 
   // After the final symbols are in place, let the reel overshoot slightly
-  // past its resting spot and spring back, instead of snapping to a stop.
+  // past its resting spot and spring back, instead of snapping to a stop
   private updateSettle(): void {
     const settleT = Math.min(
       this.phaseElapsedMs / GameConfig.spin.settleDurationMs,
@@ -186,6 +187,8 @@ export class ReelView extends Container {
     }
   }
 
+  // Calculate the current speed of the reel based on its phase and how
+  // long it's been in that phase
   private currentSpeed(): number {
     if (this.phase === "spinning") {
       const rampT = Math.min(
@@ -211,9 +214,10 @@ export class ReelView extends Container {
     return 0;
   }
 
-  // The reel's speed oscillates on a sine wave around the base speed for the
-  // whole spin, rather than sitting flat at a constant cruise speed. The
-  // envelope (0..1) fades the wave in on spin-up and back out on spin-down.
+  // The oscillating speed is a base speed plus a sine wave that oscillates
+  // up and down, scaled by the given envelope factor. The envelope factor
+  // is typically between 0 and 1, where 1 means full speed and 0 means no
+  // speed.
   private oscillatingSpeed(envelope: number): number {
     const wave = Math.sin(
       (this.continuousElapsedMs / GameConfig.spin.oscillationPeriodMs) *
@@ -233,8 +237,7 @@ export class ReelView extends Container {
     return t * t * t;
   }
 
-  // Sine S-curve: slow at the edges (t=0, t=1), fastest-changing through the
-  // middle, so speed rises/falls smoothly instead of linearly or in a sharp quad
+  // Smoothly eases in and out, so the acceleration and deceleration are gradual
   private easeInOutSine(t: number): number {
     return -(Math.cos(Math.PI * t) - 1) / 2;
   }
@@ -258,6 +261,8 @@ export class ReelView extends Container {
     }
   }
 
+  // Transition from the final shift to the settling phase, where the reel
+  // overshoots and springs back to its resting position
   private beginSettle(): void {
     this.phase = "settling";
     this.phaseElapsedMs = 0;
@@ -265,6 +270,8 @@ export class ReelView extends Container {
     this.finalShiftPending = false;
   }
 
+  // Called when the reel has fully settled on its final symbols, to reset
+  // state and resolve the promise returned by stopSpin()
   private finalize(): void {
     this.phase = "idle";
     this.offsetY = 0;
@@ -272,7 +279,8 @@ export class ReelView extends Container {
     this.onSettled = null;
   }
 
-  // Render the strip's symbols and their backgrounds based on the current strip IDs and the vertical offset
+  // Render the strip's symbols, backgrounds, and highlight glows based on
+  // the current strip IDs and the vertical offset
   private renderStrip(): void {
     this.stripIds.forEach((id, index) => {
       const row = index - 1;
@@ -294,7 +302,8 @@ export class ReelView extends Container {
   }
 
   resize(reelWidth: number, symbolSize: number, symbolSpacing: number): void {
-    // Calculate the total height of the reel based on the number of visible symbols, their size, and the spacing between them
+    // Calculate the total height of the reel based on the number of
+    // visible symbols, their size, and the spacing between them
     const reelHeight =
       symbolSize * ReelView.VISIBLE_SYMBOLS +
       (ReelView.VISIBLE_SYMBOLS - 1) * symbolSpacing;
@@ -326,7 +335,8 @@ export class ReelView extends Container {
     const totalGapSpace = (ReelView.VISIBLE_SYMBOLS - 1) * symbolSpacing;
     this.evenGap = totalGapSpace / (ReelView.VISIBLE_SYMBOLS + 1);
 
-    // Calculate the size of the symbol backgrounds based on the symbol size and the defined scale
+    // Calculate the size of the symbol backgrounds based on the symbol
+    // size and the defined scale
     const symbolBackgroundSize = symbolSize * ReelView.SYMBOL_BACKGROUND_SCALE;
 
     this.symbolBackgrounds.forEach((symbolBackground) => {
@@ -339,7 +349,8 @@ export class ReelView extends Container {
       symbolHighlight.height = symbolBackgroundSize;
     });
 
-    // Position the symbol sprites and their backgrounds evenly within the reel
+    // Position the symbol sprites, backgrounds, and highlight glows evenly
+    // within the reel
     this.renderStrip();
   }
 
@@ -371,6 +382,8 @@ export class ReelView extends Container {
     );
   }
 
+  // Animate the symbol and its highlight glow toward a target scale
+  // multiplier over a duration, then resolve the promise when done
   private tweenWinCelebration(
     symbol: Sprite,
     highlight: Sprite,
@@ -393,10 +406,7 @@ export class ReelView extends Container {
         highlight.scale.set(highlightBaseScale * multiplier);
         highlight.alpha = Math.max(
           0,
-          Math.min(
-            (multiplier - 1) / (ReelView.WIN_SYMBOL_GROW_SCALE - 1),
-            1,
-          ),
+          Math.min((multiplier - 1) / (ReelView.WIN_SYMBOL_GROW_SCALE - 1), 1),
         );
 
         if (t >= 1) {

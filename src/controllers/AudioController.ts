@@ -21,13 +21,15 @@ export class AudioController {
     return this.tracks[this.currentTrackIndex];
   }
 
-  // Starts playing the current track, and sets up the next track to play when it ends
+  // Starts playing the current track, and sets up the next track to play
+  // when it ends
   private playNextTrack(): void {
     this.currentTrackIndex = (this.currentTrackIndex + 1) % this.tracks.length;
     this.playWithAutoplayFallback();
   }
 
-  // Attempts to play the current track, and if it fails due to autoplay restrictions, start on first user interaction
+  // Attempts to play the current track, and if it fails due to autoplay
+  // restrictions, start on first user interaction
   playWithAutoplayFallback(): void {
     this.currentTrack.play().catch(() => {
       const start = () => this.currentTrack.play().catch(() => {});
@@ -53,7 +55,8 @@ export class AudioController {
     this.soundVolume = Math.max(0, Math.min(1, volume));
   }
 
-  // Plays a one-shot sound effect by name, if it exists, at the current sound volume
+  // Plays a one-shot sound effect by name, if it exists, at the current
+  // sound volume
   play(name: string): void {
     const sound = this.sounds[name];
     if (!sound) return;
