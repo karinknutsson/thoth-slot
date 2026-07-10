@@ -62,6 +62,10 @@ This was a focused front-end exercise, not a production slot game, so I made som
 
 **Sound is minimal.** Three effects and two alternating music tracks, each effect just a single `HTMLAudioElement`. Rapid repeated plays restart the sound rather than layering, which is fine for now since nothing fires that fast. Still missing entirely: a spin-start sound, something for the reels while they're spinning, a reel-stop sound, anticipation sounds building into a win, and a real mute toggle visible for the user instead of the hidden volume sliders I have now.
 
+**Bet amount is fixed.** There is currently no way for the player to change the bet size, it's hardcoded via GameConfig.balance.defaultBet. A real implementation would need bet +/- controls in the UI and validation against the player's balance.
+
+**No wild symbols.** All 15 symbols behave the same way, and none of them substitute for another.
+
 **There is no real backend.** `BackendManager` runs the RNG and win math client-side, purely for convenience. A real money-adjacent slot needs server-side RNG, payout math someone can audit, and a balance that survives a page refresh. Right now there is no persistence at all, so reloading just resets everything.
 
 **No automated tests yet.** Given the payout math is the one thing that most needs to be provably correct, `BackendManager.evaluateWins` is what I would cover first if I added tests.

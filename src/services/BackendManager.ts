@@ -85,11 +85,7 @@ export class BackendManager {
         .map((row, offset) => ({ reel: line.startReel + offset, row }));
 
       wins.push({
-        lineId: line.id,
-        lineName: line.name,
-        symbolId,
         count,
-        payoutMultiplier: payoutRule.payoutMultiplier,
         amount: payoutRule.payoutMultiplier * bet,
         positions,
       });

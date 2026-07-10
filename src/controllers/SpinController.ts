@@ -22,6 +22,7 @@ export class SpinController {
     this.audio = audio;
   }
 
+  // Initiates a spin sequence, handling the entire process from deducting the bet to evaluating wins and updating the view
   async spin(): Promise<void> {
     if (!this.model.canSpin) return;
 
@@ -68,6 +69,7 @@ export class SpinController {
     this.model.setPhase("idle");
   }
 
+  // Utility function to create a delay for a specified number of milliseconds
   private wait(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
