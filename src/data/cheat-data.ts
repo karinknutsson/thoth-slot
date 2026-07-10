@@ -34,6 +34,13 @@ export const cheats: Record<string, string[][]> = {
     ["urn", "horus", "crookAndFlail"],
     ["vase", "horus", "horus"],
   ],
+  double3Rows: [
+    ["anubis", "urn", "horus"],
+    ["ankh", "horus", "urn"],
+    ["sphinx", "urn", "crookAndFlail"],
+    ["urn", "scarab", "crookAndFlail"],
+    ["vase", "horus", "crookAndFlail"],
+  ],
   bottomRow5Urns: [
     ["vase", "sphinx", "urn"],
     ["scarab", "anubis", "urn"],
