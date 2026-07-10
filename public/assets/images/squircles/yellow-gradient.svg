@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="289" height="289" viewBox="-4 -4 297 297" fill="none">
+  <defs>
+    <radialGradient id="fadeGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fffcb8" stop-opacity="0" />
+      <stop offset="100%" stop-color="#fffcb8" stop-opacity="1" />
+    </radialGradient>
+  </defs>
+  <path d="M 244.5 144.5 C 244.5 224.11890831414024, 224.17610833289785 244.5, 144.55720001875764 244.5 C 64.93829170461741 244.5, 44.5 224.18461388159295, 44.5 144.5657055674527 C 44.5 64.94679725331245, 64.80983585274676 44.5, 144.42874416688701 44.5 C 224.04765248102728 44.5, 244.5 64.88109168585977, 244.5 144.5 Z" fill="url(#fadeGradient)" stroke="#000000" stroke-width="0" />
+</svg>

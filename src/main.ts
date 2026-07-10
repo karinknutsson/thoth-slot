@@ -2,11 +2,13 @@ import "./style.css";
 import { LoadingView } from "./views/LoadingView";
 import { GameView } from "./views/GameView";
 import { CheatView } from "./views/CheatView";
+import { AudioView } from "./views/AudioView";
 import { Application } from "pixi.js";
 import { BackendManager } from "./services/BackendManager";
 import { paytable } from "./data/paytable-data";
 import { SpinController } from "./controllers/SpinController";
 import { CheatsController } from "./controllers/CheatController";
+import { AudioController } from "./controllers/AudioController";
 import { GameStateModel } from "./models/GameStateModel";
 import { GameConfig } from "./config/GameConfig";
 
@@ -32,6 +34,7 @@ async function createApp(): Promise<void> {
     balanceWinBackground: balanceWinBackgroundTexture,
     spinButtonBackground: spinButtonBackgroundTexture,
     music,
+    sounds,
   } = await LoadingView.loadAssets(paytable.symbols, (progress) =>
     loadingView.setProgress(progress),
   );
@@ -58,8 +61,17 @@ async function createApp(): Promise<void> {
   );
   gameView.updateBalance(model.balance);
 
+  // Start the background music now that the game view is showing
+  const audioController = new AudioController(music, sounds);
+  audioController.playWithAutoplayFallback();
+
   // Create the spin controller to handle the game logic
-  const spinController = new SpinController(model, backend, gameView);
+  const spinController = new SpinController(
+    model,
+    backend,
+    gameView,
+    audioController,
+  );
 
   gameView.spinButton.on("pointertap", () => {
     gameView.setSpinButtonEnabled(false);
@@ -76,23 +88,13 @@ async function createApp(): Promise<void> {
     app.stage.addChild(cheatView);
   }
 
-  return;
-
-  // Start the background music now that the game view is showing
-  music.play().catch(() => {
-    const startMusic = () => {
-      music.play().catch(() => {});
-    };
-
-    // Browsers block audio autoplay without a prior user gesture, so fall
-    // back to starting it on the first interaction if that happens
-    for (const eventName of ["pointerdown", "keydown", "touchstart"]) {
-      document.addEventListener(eventName, startMusic, {
-        once: true,
-        capture: true,
-      });
-    }
-  });
+  if (GameConfig.showAudioMenu) {
+    const audioView = new AudioView(
+      (volume) => audioController.setMusicVolume(volume),
+      (volume) => audioController.setSoundVolume(volume),
+    );
+    app.stage.addChild(audioView);
+  }
 }
 
 await createApp();

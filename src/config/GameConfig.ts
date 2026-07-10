@@ -4,7 +4,8 @@ export const GameConfig = {
     defaultBet: 1,
   },
 
-  showCheatMenu: false,
+  showCheatMenu: true,
+  showAudioMenu: true,
 
   reels: {
     count: 5,
@@ -22,6 +23,9 @@ export const GameConfig = {
 
     // Delay between each reel's stop, so they settle left to right instead of all at once
     stopStaggerMs: 500,
+
+    // Delay after the reels settle before the win amount updates and celebrates
+    winDisplayDelayMs: 1000,
 
     // Reel spin animation feel
     baseSpeed: 3200,
