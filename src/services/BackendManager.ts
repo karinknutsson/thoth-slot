@@ -95,6 +95,46 @@ export class BackendManager {
       });
     }
 
-    return wins;
+    return this.removeSubsumedWins(wins);
+  }
+
+  // To keep lines from overlapping, we remove any wins that are fully contained within another win
+  private removeSubsumedWins(wins: Win[]): Win[] {
+    const deduped = this.dedupeByPositions(wins);
+    return deduped.filter(
+      (win) => !deduped.some((other) => this.isSubsumedBy(win, other)),
+    );
+  }
+
+  // Removes duplicate wins that have the same positions, keeping only the first occurrence
+  private dedupeByPositions(wins: Win[]): Win[] {
+    const seenPositionKeys = new Set<string>();
+    return wins.filter((win) => {
+      const key = this.positionsKey(win.positions);
+      if (seenPositionKeys.has(key)) return false;
+      seenPositionKeys.add(key);
+      return true;
+    });
+  }
+
+  private positionsKey(positions: Win["positions"]): string {
+    return positions
+      .map((position) => `${position.reel}:${position.row}`)
+      .sort()
+      .join(",");
+  }
+
+  private isSubsumedBy(win: Win, other: Win): boolean {
+    if (win === other || win.positions.length >= other.positions.length) {
+      return false;
+    }
+
+    return win.positions.every((position) =>
+      other.positions.some(
+        (otherPosition) =>
+          otherPosition.reel === position.reel &&
+          otherPosition.row === position.row,
+      ),
+    );
   }
 }
