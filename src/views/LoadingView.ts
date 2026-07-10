@@ -1,5 +1,4 @@
 import { Container, Graphics, Text, Assets, Sprite, Texture } from "pixi.js";
-import type Symbol from "../types/symbol.interface";
 import { GameConfig } from "../config/GameConfig";
 
 export class LoadingView extends Container {
@@ -16,15 +15,6 @@ export class LoadingView extends Container {
   private static readonly BAR_CORNER_RADIUS = 4;
   private static readonly SILHOUETTE_BOTTOM_MARGIN_RATIO = 0.05;
   private static readonly TITLE_TOP_MARGIN_RATIO = 0.1;
-  private static readonly MUSIC_PATHS = [
-    "/assets/music/egypt-desert-music-01.mp3",
-    "/assets/music/egypt-desert-music-02.mp3",
-  ];
-  private static readonly SOUND_PATHS = [
-    "/assets/sounds/win-sound.mp3",
-    "/assets/sounds/big-win-sound.mp3",
-    "/assets/sounds/add-to-win.mp3",
-  ];
 
   private barWidth = LoadingView.BAR_WIDTH_DESKTOP;
   private barHeight = LoadingView.BAR_HEIGHT_DESKTOP;
@@ -81,114 +71,6 @@ export class LoadingView extends Container {
       document.fonts.load('800 24px "Inter"'),
     ]);
     return new LoadingView(pageBackgroundTexture, silhouetteTexture);
-  }
-
-  static async loadAssets(
-    symbols: Symbol[],
-    onProgress?: (progress: number) => void,
-  ): Promise<{
-    gameBackground: Texture;
-    symbols: Record<string, Texture>;
-    symbolBackground: Texture;
-    symbolHighlightBackground: Texture;
-    balanceWinBackground: Texture;
-    spinButtonBackground: Texture;
-    music: HTMLAudioElement[];
-    sounds: Record<string, HTMLAudioElement>;
-  }> {
-    const gameBackgroundPath = "/assets/images/game-background.png";
-    const symbolBackgroundPath = "/assets/images/squircles/yellow-gradient.svg";
-    const symbolHighlightBackgroundPath =
-      "/assets/images/squircles/yellow-gradient-inverse.svg";
-    const balanceWinBackgroundPath =
-      "/assets/images/balance-win-background.png";
-    const spinButtonBackgroundPath =
-      "/assets/images/gold-star-spin-background.png";
-
-    const symbolPathToId = new Map<string, string>();
-    for (const symbol of symbols) {
-      symbolPathToId.set(`/assets/symbols/${symbol.textureKey}.png`, symbol.id);
-    }
-    const symbolPaths = Array.from(symbolPathToId.keys());
-
-    // Load all textures, music, and sounds concurrently, reporting
-    // progress if a callback is provided
-    const [textures, music, sounds] = await Promise.all([
-      Assets.load(
-        [
-          gameBackgroundPath,
-          symbolBackgroundPath,
-          symbolHighlightBackgroundPath,
-          balanceWinBackgroundPath,
-          spinButtonBackgroundPath,
-          ...symbolPaths,
-        ],
-        onProgress,
-      ),
-      LoadingView.loadMusic(),
-      LoadingView.loadSounds(),
-    ]);
-
-    const symbolTextureMap: Record<string, Texture> = {};
-    for (const [path, id] of symbolPathToId) {
-      symbolTextureMap[id] = textures[path];
-    }
-
-    return {
-      gameBackground: textures[gameBackgroundPath],
-      symbols: symbolTextureMap,
-      symbolBackground: textures[symbolBackgroundPath],
-      symbolHighlightBackground: textures[symbolHighlightBackgroundPath],
-      balanceWinBackground: textures[balanceWinBackgroundPath],
-      spinButtonBackground: textures[spinButtonBackgroundPath],
-      music,
-      sounds,
-    };
-  }
-
-  // Load the background music tracks and return them, ready to be played
-  // in sequence
-  private static loadMusic(): Promise<HTMLAudioElement[]> {
-    return Promise.all(
-      LoadingView.MUSIC_PATHS.map(LoadingView.loadAudioElement),
-    );
-  }
-
-  // Load the one-shot sound effects, keyed by file name without extension
-  private static async loadSounds(): Promise<Record<string, HTMLAudioElement>> {
-    const audios = await Promise.all(
-      LoadingView.SOUND_PATHS.map(LoadingView.loadAudioElement),
-    );
-
-    const sounds: Record<string, HTMLAudioElement> = {};
-    LoadingView.SOUND_PATHS.forEach((path, index) => {
-      const name = path
-        .split("/")
-        .pop()!
-        .replace(/\.[^.]+$/, "");
-      sounds[name] = audios[index];
-    });
-
-    return sounds;
-  }
-
-  private static loadAudioElement(path: string): Promise<HTMLAudioElement> {
-    return new Promise((resolve, reject) => {
-      const audio = new Audio(path);
-      // Some browsers (Safari in particular) are inconsistent about
-      // autoplay/gesture handling for media elements that aren't in the DOM.
-      audio.style.display = "none";
-      document.body.appendChild(audio);
-      audio.addEventListener("canplaythrough", () => resolve(audio), {
-        once: true,
-      });
-      audio.addEventListener(
-        "error",
-        () => reject(new Error(`Failed to load audio: ${path}`)),
-        { once: true },
-      );
-      audio.load();
-    });
   }
 
   setProgress(ratio: number): void {
