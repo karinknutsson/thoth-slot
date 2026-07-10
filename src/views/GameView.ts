@@ -3,9 +3,10 @@ import { ReelView } from "./ReelView";
 import { GameConfig } from "../config/GameConfig";
 
 export class GameView extends Container {
-  private static readonly BOARD_WIDTH_RATIO_DESKTOP = 0.6;
-  private static readonly BOARD_WIDTH_RATIO_TABLET = 0.8;
+  private static readonly BOARD_WIDTH_RATIO_DESKTOP = 0.55;
+  private static readonly BOARD_WIDTH_RATIO_TABLET = 0.72;
   private static readonly BOARD_WIDTH_RATIO_MOBILE = 0.9;
+  private static readonly BOARD_MAX_HEIGHT_RATIO = 0.6;
   private static readonly SYMBOL_SPACING_RATIO = 0.15;
   private static readonly REEL_GAP = 32;
   private static readonly REEL_GAP_COLOR = 0x240902;
@@ -346,7 +347,18 @@ export class GameView extends Container {
           : GameView.BOARD_WIDTH_RATIO_DESKTOP;
 
     const boardTexture = this.reelsBackground.texture;
-    const boardWidth = window.innerWidth * boardWidthRatio;
+    const boardTextureAspect = boardTexture.width / boardTexture.height;
+
+    // On very wide/short windows, sizing purely off width can make the board
+    // taller than the window has room for; cap it by height too (mobile uses
+    // its own stacked layout below the board, so it isn't affected)
+    const widthBasedBoardWidth = window.innerWidth * boardWidthRatio;
+    const boardWidth = isMobile
+      ? widthBasedBoardWidth
+      : Math.min(
+          widthBasedBoardWidth,
+          window.innerHeight * GameView.BOARD_MAX_HEIGHT_RATIO * boardTextureAspect,
+        );
     const scale = boardWidth / boardTexture.width;
     const boardHeight = boardTexture.height * scale;
 
