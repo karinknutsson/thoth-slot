@@ -1,19 +1,22 @@
 import type Symbol from "../types/symbol.interface";
 
+// Weights are set inversely to payout-data.ts: symbols with the lowest
+// payout are the most common, and the highest-payout symbols are the
+// rarest
 export const symbols = [
-  { id: "thoth", textureKey: "01", weight: 1, isWild: false },
-  { id: "horus", textureKey: "02", weight: 1, isWild: false },
-  { id: "anubis", textureKey: "03", weight: 2, isWild: false },
-  { id: "scarab", textureKey: "04", weight: 2, isWild: false },
-  { id: "ankh", textureKey: "05", weight: 4, isWild: false },
-  { id: "eyeOfHorus", textureKey: "06", weight: 4, isWild: false },
-  { id: "crookAndFlail", textureKey: "07", weight: 5, isWild: false },
-  { id: "horusFalcon", textureKey: "08", weight: 3, isWild: false },
-  { id: "sphinx", textureKey: "09", weight: 5, isWild: false },
-  { id: "urn", textureKey: "10", weight: 9, isWild: false },
-  { id: "vase", textureKey: "11", weight: 10, isWild: false },
-  { id: "funeraryJars", textureKey: "12", weight: 6, isWild: false },
-  { id: "shabti", textureKey: "13", weight: 8, isWild: false },
-  { id: "sarcophagi", textureKey: "14", weight: 5, isWild: false },
-  { id: "thutankhamonPillar", textureKey: "15", weight: 5, isWild: false },
+  { id: "thoth", textureKey: "01", weight: 1 },
+  { id: "horus", textureKey: "02", weight: 1 },
+  { id: "anubis", textureKey: "03", weight: 2 },
+  { id: "scarab", textureKey: "04", weight: 2 },
+  { id: "ankh", textureKey: "05", weight: 4 },
+  { id: "eyeOfHorus", textureKey: "06", weight: 4 },
+  { id: "crookAndFlail", textureKey: "07", weight: 5 },
+  { id: "horusFalcon", textureKey: "08", weight: 3 },
+  { id: "sphinx", textureKey: "09", weight: 5 },
+  { id: "urn", textureKey: "10", weight: 9 },
+  { id: "vase", textureKey: "11", weight: 10 },
+  { id: "funeraryJars", textureKey: "12", weight: 6 },
+  { id: "shabti", textureKey: "13", weight: 8 },
+  { id: "sarcophagi", textureKey: "14", weight: 5 },
+  { id: "thutankhamonPillar", textureKey: "15", weight: 5 },
 ] as Symbol[];

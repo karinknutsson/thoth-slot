@@ -68,6 +68,8 @@ export class AudioView extends Container {
     window.addEventListener("resize", () => this.resize());
   }
 
+  // Adds a slider row with a label, track, and handle, and sets up
+  // pointer events for dragging
   private addRow(
     label: string,
     y: number,
@@ -86,7 +88,10 @@ export class AudioView extends Container {
     this.addChild(text);
 
     const trackY =
-      y + AudioView.FONT_SIZE + AudioView.LABEL_TRACK_GAP + AudioView.HANDLE_RADIUS;
+      y +
+      AudioView.FONT_SIZE +
+      AudioView.LABEL_TRACK_GAP +
+      AudioView.HANDLE_RADIUS;
 
     const track = new Graphics();
     track.position.set(AudioView.PADDING, trackY);
@@ -143,7 +148,12 @@ export class AudioView extends Container {
     return Math.max(text.width, AudioView.TRACK_WIDTH);
   }
 
-  private updateFromPointer(row: SliderRow, event: FederatedPointerEvent): void {
+  // Updates the volume of a slider row based on the pointer's position,
+  // clamped between 0 and 1
+  private updateFromPointer(
+    row: SliderRow,
+    event: FederatedPointerEvent,
+  ): void {
     const localX = row.track.toLocal(event.global).x;
     const ratio = Math.max(0, Math.min(1, localX / row.trackWidth));
     row.volume = ratio;
@@ -151,12 +161,18 @@ export class AudioView extends Container {
     row.onChange(ratio);
   }
 
+  // Draws the track and handle for a slider row based on its current volume
   private drawSlider(row: SliderRow): void {
     const fillWidth = row.trackWidth * row.volume;
 
     row.track
       .clear()
-      .rect(0, -AudioView.TRACK_HEIGHT / 2, row.trackWidth, AudioView.TRACK_HEIGHT)
+      .rect(
+        0,
+        -AudioView.TRACK_HEIGHT / 2,
+        row.trackWidth,
+        AudioView.TRACK_HEIGHT,
+      )
       .fill({ color: AudioView.TRACK_COLOR, alpha: 0.4 })
       .rect(0, -AudioView.TRACK_HEIGHT / 2, fillWidth, AudioView.TRACK_HEIGHT)
       .fill({ color: AudioView.FILL_COLOR });

@@ -12,7 +12,8 @@ export class BackendManager {
     this.weightedPool = this.buildWeightedPool();
   }
 
-  // Generates a weighted pool of symbol IDs based on their weights in the paytable
+  // Generates a weighted pool of symbol IDs based on their weights in the
+  // paytable
   private buildWeightedPool(): string[] {
     const pool: string[] = [];
     for (const symbol of this.paytable.symbols) {
@@ -57,7 +58,8 @@ export class BackendManager {
     return grid;
   }
 
-  // Evaluates the grid against the paytable and returns an array of win objects for any winning lines
+  // Evaluates the grid against the paytable and returns an array of win
+  // objects for any winning lines
   public evaluateWins(grid: string[][], bet: number): Win[] {
     const wins: Win[] = [];
 
@@ -85,11 +87,7 @@ export class BackendManager {
         .map((row, offset) => ({ reel: line.startReel + offset, row }));
 
       wins.push({
-        lineId: line.id,
-        lineName: line.name,
-        symbolId,
         count,
-        payoutMultiplier: payoutRule.payoutMultiplier,
         amount: payoutRule.payoutMultiplier * bet,
         positions,
       });
@@ -98,7 +96,8 @@ export class BackendManager {
     return this.removeSubsumedWins(wins);
   }
 
-  // To keep lines from overlapping, we remove any wins that are fully contained within another win
+  // To keep lines from overlapping, we remove any wins that are fully
+  // contained within another win
   private removeSubsumedWins(wins: Win[]): Win[] {
     const deduped = this.dedupeByPositions(wins);
     return deduped.filter(
@@ -106,7 +105,8 @@ export class BackendManager {
     );
   }
 
-  // Removes duplicate wins that have the same positions, keeping only the first occurrence
+  // Removes duplicate wins that have the same positions, keeping only the
+  // first occurrence
   private dedupeByPositions(wins: Win[]): Win[] {
     const seenPositionKeys = new Set<string>();
     return wins.filter((win) => {
@@ -117,6 +117,8 @@ export class BackendManager {
     });
   }
 
+  // Generates a unique string key for a set of positions, used for
+  // deduplication
   private positionsKey(positions: Win["positions"]): string {
     return positions
       .map((position) => `${position.reel}:${position.row}`)
@@ -124,6 +126,8 @@ export class BackendManager {
       .join(",");
   }
 
+  // Determines if one win is fully contained within another win based on
+  // their positions
   private isSubsumedBy(win: Win, other: Win): boolean {
     if (win === other || win.positions.length >= other.positions.length) {
       return false;

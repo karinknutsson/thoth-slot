@@ -1,4 +1,4 @@
-export type SpinPhase = "idle" | "spinning" | "revealing";
+export type SpinPhase = "idle" | "spinning";
 
 export class GameStateModel {
   private _balance: number;
@@ -21,10 +21,6 @@ export class GameStateModel {
 
   get totalWin(): number {
     return this._totalWin;
-  }
-
-  get phase(): SpinPhase {
-    return this._phase;
   }
 
   get canSpin(): boolean {
