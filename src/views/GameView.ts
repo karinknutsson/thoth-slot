@@ -7,15 +7,15 @@ export class GameView extends Container {
   private static readonly BOARD_WIDTH_RATIO_DESKTOP = 0.55;
   private static readonly BOARD_WIDTH_RATIO_TABLET = 0.72;
   private static readonly BOARD_WIDTH_RATIO_MOBILE = 0.9;
-  private static readonly BOARD_MAX_HEIGHT_RATIO = 0.6;
+  private static readonly BOARD_MAX_HEIGHT_RATIO = 0.5;
+  private static readonly BOARD_VERTICAL_SHIFT_RATIO = 0.04;
   private static readonly SYMBOL_SPACING_RATIO = 0.15;
   private static readonly REEL_GAP = 32;
   private static readonly REEL_GAP_COLOR = 0x240902;
   private static readonly CONTENT_PADDING_LEFT_RIGHT = 80;
   private static readonly CONTENT_PADDING_TOP = 140;
   private static readonly CONTENT_PADDING_BOTTOM = 130;
-  private static readonly TITLE_FONT_SIZE = 115.2;
-  private static readonly TITLE_FONT_SIZE_MOBILE = 115.2 * 0.8;
+  private static readonly TITLE_FONT_SIZE = 115.2 * 0.8;
   private static readonly PANEL_WIDTH_RATIO = 0.22;
   private static readonly PANEL_WIDTH_RATIO_MOBILE = 0.44;
   private static readonly PANEL_MARGIN_X = 30;
@@ -382,24 +382,28 @@ export class GameView extends Container {
     const scale = boardWidth / boardTexture.width;
     const boardHeight = boardTexture.height * scale;
 
+    // On wide screens the board is nudged up slightly to leave more breathing
+    // room below it for the balance/spin/win row
+    const boardCenterY = isMobile
+      ? centerY
+      : centerY - window.innerHeight * GameView.BOARD_VERTICAL_SHIFT_RATIO;
+
     // Centered between the top of the window and the top of the game board
     this.titleLabel.text = isMobile ? "Th0th\nSl0t" : "Th0th Sl0t";
-    this.titleLabel.style.fontSize = isMobile
-      ? GameView.TITLE_FONT_SIZE_MOBILE
-      : GameView.TITLE_FONT_SIZE;
-    const boardTop = centerY - boardHeight / 2;
+    this.titleLabel.style.fontSize = GameView.TITLE_FONT_SIZE;
+    const boardTop = boardCenterY - boardHeight / 2;
     this.titleLabel.position.set(centerX, boardTop / 2);
 
     this.reelsBackground.width = boardWidth;
     this.reelsBackground.height = boardHeight;
-    this.reelsBackground.position.set(centerX, centerY);
+    this.reelsBackground.position.set(centerX, boardCenterY);
 
     const paddingLeftRight = GameView.CONTENT_PADDING_LEFT_RIGHT * scale;
     const paddingTop = GameView.CONTENT_PADDING_TOP * scale;
     const paddingBottom = GameView.CONTENT_PADDING_BOTTOM * scale;
 
     const contentLeft = centerX - boardWidth / 2 + paddingLeftRight;
-    const contentTop = centerY - boardHeight / 2 + paddingTop;
+    const contentTop = boardCenterY - boardHeight / 2 + paddingTop;
     const contentWidth = boardWidth - paddingLeftRight * 2;
     const contentHeight = boardHeight - paddingTop - paddingBottom;
 
@@ -458,7 +462,7 @@ export class GameView extends Container {
       const spinButtonScale = spinButtonSize / spinButtonTexture.width;
       const spinButtonHeight = spinButtonTexture.height * spinButtonScale;
 
-      const stackTop = centerY + boardHeight / 2;
+      const stackTop = boardCenterY + boardHeight / 2;
       const stackAvailableHeight = window.innerHeight - stackTop;
       const stackContentHeight = spinButtonHeight + panelHeight * 2;
       const stackGap = (stackAvailableHeight - stackContentHeight) / 4;
@@ -485,7 +489,7 @@ export class GameView extends Container {
           : GameView.SPIN_BUTTON_HEIGHT_MULTIPLIER_DESKTOP;
       spinButtonSize = panelHeight * spinButtonMultiplier;
 
-      const footerTop = centerY + boardHeight / 2;
+      const footerTop = boardCenterY + boardHeight / 2;
       const footerCenterY = (footerTop + window.innerHeight) / 2;
 
       const rowLeft = centerX - boardWidth / 2;
