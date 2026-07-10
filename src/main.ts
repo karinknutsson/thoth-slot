@@ -31,6 +31,7 @@ async function createApp(): Promise<void> {
     gameBackground: gameBackgroundTexture,
     symbols: symbolTextures,
     symbolBackground: symbolBackgroundTexture,
+    symbolHighlightBackground: symbolHighlightBackgroundTexture,
     balanceWinBackground: balanceWinBackgroundTexture,
     spinButtonBackground: spinButtonBackgroundTexture,
     music,
@@ -50,6 +51,7 @@ async function createApp(): Promise<void> {
     symbolTextures,
     backend.getWeightedPool(),
     symbolBackgroundTexture,
+    symbolHighlightBackgroundTexture,
     balanceWinBackgroundTexture,
     spinButtonBackgroundTexture,
   );

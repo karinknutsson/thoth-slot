@@ -1,6 +1,7 @@
 import { Container, Graphics, Sprite, Text, Texture, Ticker } from "pixi.js";
 import { ReelView } from "./ReelView";
 import { GameConfig } from "../config/GameConfig";
+import type Win from "../types/win.interface";
 
 export class GameView extends Container {
   private static readonly BOARD_WIDTH_RATIO_DESKTOP = 0.55;
@@ -14,6 +15,7 @@ export class GameView extends Container {
   private static readonly CONTENT_PADDING_TOP = 140;
   private static readonly CONTENT_PADDING_BOTTOM = 130;
   private static readonly TITLE_FONT_SIZE = 115.2;
+  private static readonly TITLE_FONT_SIZE_MOBILE = 115.2 * 0.8;
   private static readonly PANEL_WIDTH_RATIO = 0.22;
   private static readonly PANEL_WIDTH_RATIO_MOBILE = 0.44;
   private static readonly PANEL_MARGIN_X = 30;
@@ -66,6 +68,7 @@ export class GameView extends Container {
     symbolTextureMap: Record<string, Texture>,
     weightedPool: string[],
     symbolBackgroundTexture: Texture,
+    symbolHighlightBackgroundTexture: Texture,
     balanceWinBackgroundTexture: Texture,
     spinButtonBackgroundTexture: Texture,
   ) {
@@ -111,7 +114,12 @@ export class GameView extends Container {
     this.reels = Array.from(
       { length: GameConfig.reels.count },
       () =>
-        new ReelView(symbolTextureMap, weightedPool, symbolBackgroundTexture),
+        new ReelView(
+          symbolTextureMap,
+          weightedPool,
+          symbolBackgroundTexture,
+          symbolHighlightBackgroundTexture,
+        ),
     );
 
     this.addChild(...this.reels);
@@ -201,6 +209,16 @@ export class GameView extends Container {
 
   updateWin(amount: number): void {
     this.winValue.text = `${amount}`;
+  }
+
+  // Pops each winning symbol and its highlight glow to draw attention to the
+  // lines that just won
+  celebrateWinningSymbols(wins: Win[]): void {
+    for (const win of wins) {
+      for (const { reel, row } of win.positions) {
+        void this.reels[reel].celebrateWin(row);
+      }
+    }
   }
 
   // Updates the win amount and pops it up to a larger size before settling
@@ -357,14 +375,18 @@ export class GameView extends Container {
       ? widthBasedBoardWidth
       : Math.min(
           widthBasedBoardWidth,
-          window.innerHeight * GameView.BOARD_MAX_HEIGHT_RATIO * boardTextureAspect,
+          window.innerHeight *
+            GameView.BOARD_MAX_HEIGHT_RATIO *
+            boardTextureAspect,
         );
     const scale = boardWidth / boardTexture.width;
     const boardHeight = boardTexture.height * scale;
 
     // Centered between the top of the window and the top of the game board
     this.titleLabel.text = isMobile ? "Th0th\nSl0t" : "Th0th Sl0t";
-    this.titleLabel.style.fontSize = GameView.TITLE_FONT_SIZE;
+    this.titleLabel.style.fontSize = isMobile
+      ? GameView.TITLE_FONT_SIZE_MOBILE
+      : GameView.TITLE_FONT_SIZE;
     const boardTop = centerY - boardHeight / 2;
     this.titleLabel.position.set(centerX, boardTop / 2);
 

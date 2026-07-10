@@ -4,8 +4,8 @@ export const GameConfig = {
     defaultBet: 1,
   },
 
-  showCheatMenu: false,
-  showAudioMenu: false,
+  showCheatMenu: true,
+  showAudioMenu: true,
 
   reels: {
     count: 5,

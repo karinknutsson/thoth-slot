@@ -55,6 +55,8 @@ export class SpinController {
       this.audio.play("win-sound");
     }
 
+    this.view.celebrateWinningSymbols(wins);
+
     if (totalWin > 0) {
       this.model.addWins(totalWin);
       this.view.updateBalance(this.model.balance);

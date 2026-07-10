@@ -80,6 +80,10 @@ export class BackendManager {
       );
       if (!payoutRule) continue;
 
+      const positions = line.rowPerReel
+        .slice(0, count)
+        .map((row, offset) => ({ reel: line.startReel + offset, row }));
+
       wins.push({
         lineId: line.id,
         lineName: line.name,
@@ -87,6 +91,7 @@ export class BackendManager {
         count,
         payoutMultiplier: payoutRule.payoutMultiplier,
         amount: payoutRule.payoutMultiplier * bet,
+        positions,
       });
     }
 

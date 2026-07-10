@@ -90,6 +90,7 @@ export class LoadingView extends Container {
     gameBackground: Texture;
     symbols: Record<string, Texture>;
     symbolBackground: Texture;
+    symbolHighlightBackground: Texture;
     balanceWinBackground: Texture;
     spinButtonBackground: Texture;
     music: HTMLAudioElement[];
@@ -97,6 +98,8 @@ export class LoadingView extends Container {
   }> {
     const gameBackgroundPath = "/assets/images/game-background.png";
     const symbolBackgroundPath = "/assets/images/squircles/yellow-gradient.svg";
+    const symbolHighlightBackgroundPath =
+      "/assets/images/squircles/yellow-gradient-inverse.svg";
     const balanceWinBackgroundPath =
       "/assets/images/balance-win-background.png";
     const spinButtonBackgroundPath =
@@ -114,6 +117,7 @@ export class LoadingView extends Container {
         [
           gameBackgroundPath,
           symbolBackgroundPath,
+          symbolHighlightBackgroundPath,
           balanceWinBackgroundPath,
           spinButtonBackgroundPath,
           ...symbolPaths,
@@ -133,6 +137,7 @@ export class LoadingView extends Container {
       gameBackground: textures[gameBackgroundPath],
       symbols: symbolTextureMap,
       symbolBackground: textures[symbolBackgroundPath],
+      symbolHighlightBackground: textures[symbolHighlightBackgroundPath],
       balanceWinBackground: textures[balanceWinBackgroundPath],
       spinButtonBackground: textures[spinButtonBackgroundPath],
       music,
