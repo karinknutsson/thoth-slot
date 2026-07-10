@@ -19,10 +19,14 @@ export class ReelView extends Container {
   private static readonly ICON_SCALE = 0.8;
   private static readonly SYMBOL_BACKGROUND_ALPHA = 0.5;
   private static readonly SYMBOL_BACKGROUND_SCALE = 1.5;
+  private static readonly WIN_SYMBOL_GROW_SCALE = 1.3;
+  private static readonly WIN_SYMBOL_GROW_MS = 250;
+  private static readonly WIN_SYMBOL_SHRINK_MS = 300;
 
   private readonly background: Graphics;
   private readonly contentMask: Graphics;
   private readonly symbolBackgrounds: Sprite[];
+  private readonly symbolHighlights: Sprite[];
   private readonly symbolSprites: Sprite[];
   private readonly textureMap: Record<string, Texture>;
   private readonly weightedPool: string[];
@@ -53,6 +57,7 @@ export class ReelView extends Container {
     textureMap: Record<string, Texture>,
     weightedPool: string[],
     symbolBackgroundTexture: Texture,
+    symbolHighlightTexture: Texture,
   ) {
     super();
 
@@ -76,6 +81,19 @@ export class ReelView extends Container {
       },
     );
     this.addChild(...this.symbolBackgrounds);
+
+    // Highlight glow shown behind a symbol while it celebrates a win; hidden
+    // (alpha 0) the rest of the time
+    this.symbolHighlights = Array.from(
+      { length: ReelView.STRIP_LENGTH },
+      () => {
+        const symbolHighlight = new Sprite(symbolHighlightTexture);
+        symbolHighlight.anchor.set(0.5);
+        symbolHighlight.alpha = 0;
+        return symbolHighlight;
+      },
+    );
+    this.addChild(...this.symbolHighlights);
 
     // Create the symbol strip: 3 visible rows plus one offscreen buffer row
     this.stripIds = Array.from({ length: ReelView.STRIP_LENGTH }, () =>
@@ -267,6 +285,7 @@ export class ReelView extends Container {
       sprite.position.set(this.reelWidth / 2, y);
 
       this.symbolBackgrounds[index].position.set(this.reelWidth / 2, y);
+      this.symbolHighlights[index].position.set(this.reelWidth / 2, y);
     });
   }
 
@@ -315,7 +334,78 @@ export class ReelView extends Container {
       symbolBackground.height = symbolBackgroundSize;
     });
 
+    this.symbolHighlights.forEach((symbolHighlight) => {
+      symbolHighlight.width = symbolBackgroundSize;
+      symbolHighlight.height = symbolBackgroundSize;
+    });
+
     // Position the symbol sprites and their backgrounds evenly within the reel
     this.renderStrip();
+  }
+
+  // Pops the symbol at the given visible row (0 = top) up to a larger size
+  // and back down, while its highlight glow fades in and out in sync with it
+  async celebrateWin(row: number): Promise<void> {
+    const index = row + 1;
+    const symbol = this.symbolSprites[index];
+    const highlight = this.symbolHighlights[index];
+
+    const symbolBaseScale = symbol.scale.x;
+    const highlightBaseScale = highlight.scale.x;
+
+    await this.tweenWinCelebration(
+      symbol,
+      highlight,
+      symbolBaseScale,
+      highlightBaseScale,
+      ReelView.WIN_SYMBOL_GROW_SCALE,
+      ReelView.WIN_SYMBOL_GROW_MS,
+    );
+    await this.tweenWinCelebration(
+      symbol,
+      highlight,
+      symbolBaseScale,
+      highlightBaseScale,
+      1,
+      ReelView.WIN_SYMBOL_SHRINK_MS,
+    );
+  }
+
+  private tweenWinCelebration(
+    symbol: Sprite,
+    highlight: Sprite,
+    symbolBaseScale: number,
+    highlightBaseScale: number,
+    targetMultiplier: number,
+    durationMs: number,
+  ): Promise<void> {
+    return new Promise((resolve) => {
+      const startMultiplier = symbol.scale.x / symbolBaseScale;
+      let elapsed = 0;
+
+      const onTick = (ticker: Ticker): void => {
+        elapsed += ticker.deltaMS;
+        const t = Math.min(elapsed / durationMs, 1);
+        const multiplier =
+          startMultiplier + (targetMultiplier - startMultiplier) * t;
+
+        symbol.scale.set(symbolBaseScale * multiplier);
+        highlight.scale.set(highlightBaseScale * multiplier);
+        highlight.alpha = Math.max(
+          0,
+          Math.min(
+            (multiplier - 1) / (ReelView.WIN_SYMBOL_GROW_SCALE - 1),
+            1,
+          ),
+        );
+
+        if (t >= 1) {
+          Ticker.shared.remove(onTick);
+          resolve();
+        }
+      };
+
+      Ticker.shared.add(onTick);
+    });
   }
 }
