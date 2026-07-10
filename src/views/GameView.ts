@@ -1,7 +1,8 @@
-import { Container, Graphics, Sprite, Text, Texture, Ticker } from "pixi.js";
+import { Container, Graphics, Sprite, Text, Texture } from "pixi.js";
 import { ReelView } from "./ReelView";
 import { GameConfig } from "../config/GameConfig";
 import type Win from "../types/win.interface";
+import { tween } from "../utils/tween";
 
 export class GameView extends Container {
   private static readonly BOARD_WIDTH_RATIO_DESKTOP = 0.55;
@@ -261,28 +262,16 @@ export class GameView extends Container {
     anchorX: number,
     anchorY: number,
   ): Promise<void> {
-    return new Promise((resolve) => {
-      const startScale = this.winValue.scale.x;
-      let elapsed = 0;
+    const startScale = this.winValue.scale.x;
 
-      const onTick = (ticker: Ticker): void => {
-        elapsed += ticker.deltaMS;
-        const t = Math.min(elapsed / durationMs, 1);
-        const scale = startScale + (targetScale - startScale) * t;
+    return tween(durationMs, (t) => {
+      const scale = startScale + (targetScale - startScale) * t;
 
-        this.winValue.scale.set(scale);
-        this.winValue.position.set(
-          anchorX + (baseWidth * (scale - 1)) / 2,
-          anchorY - (baseHeight * (scale - 1)) / 2,
-        );
-
-        if (t >= 1) {
-          Ticker.shared.remove(onTick);
-          resolve();
-        }
-      };
-
-      Ticker.shared.add(onTick);
+      this.winValue.scale.set(scale);
+      this.winValue.position.set(
+        anchorX + (baseWidth * (scale - 1)) / 2,
+        anchorY - (baseHeight * (scale - 1)) / 2,
+      );
     });
   }
 

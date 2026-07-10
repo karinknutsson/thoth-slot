@@ -7,6 +7,7 @@ import {
   Ticker,
 } from "pixi.js";
 import { GameConfig } from "../config/GameConfig";
+import { tween } from "../utils/tween";
 
 type SpinPhase = "idle" | "spinning" | "stopping" | "settling";
 
@@ -392,30 +393,18 @@ export class ReelView extends Container {
     targetMultiplier: number,
     durationMs: number,
   ): Promise<void> {
-    return new Promise((resolve) => {
-      const startMultiplier = symbol.scale.x / symbolBaseScale;
-      let elapsed = 0;
+    const startMultiplier = symbol.scale.x / symbolBaseScale;
 
-      const onTick = (ticker: Ticker): void => {
-        elapsed += ticker.deltaMS;
-        const t = Math.min(elapsed / durationMs, 1);
-        const multiplier =
-          startMultiplier + (targetMultiplier - startMultiplier) * t;
+    return tween(durationMs, (t) => {
+      const multiplier =
+        startMultiplier + (targetMultiplier - startMultiplier) * t;
 
-        symbol.scale.set(symbolBaseScale * multiplier);
-        highlight.scale.set(highlightBaseScale * multiplier);
-        highlight.alpha = Math.max(
-          0,
-          Math.min((multiplier - 1) / (ReelView.WIN_SYMBOL_GROW_SCALE - 1), 1),
-        );
-
-        if (t >= 1) {
-          Ticker.shared.remove(onTick);
-          resolve();
-        }
-      };
-
-      Ticker.shared.add(onTick);
+      symbol.scale.set(symbolBaseScale * multiplier);
+      highlight.scale.set(highlightBaseScale * multiplier);
+      highlight.alpha = Math.max(
+        0,
+        Math.min((multiplier - 1) / (ReelView.WIN_SYMBOL_GROW_SCALE - 1), 1),
+      );
     });
   }
 }
