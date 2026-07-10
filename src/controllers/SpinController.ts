@@ -49,22 +49,17 @@ export class SpinController {
     // so when a 5-of-a-kind win is present, only play the bigger sound for it
     const hasFiveOfAKind = wins.some((win) => win.count === 5);
 
-    for (const win of wins) {
-      if (win.count === 5) this.audio.play("magic-spell-5");
-      else if (
-        (win.count === 3 || win.count === 4) &&
-        !hasFiveOfAKind
-      )
-        this.audio.play("magic-spell-3");
+    if (hasFiveOfAKind) {
+      this.audio.play("big-win-sound");
+    } else if (wins.some((win) => win.count === 3 || win.count === 4)) {
+      this.audio.play("win-sound");
     }
 
     if (totalWin > 0) {
-      console.log(`Win: ${totalWin}`, wins);
       this.model.addWins(totalWin);
       this.view.updateBalance(this.model.balance);
-
-      await this.wait(GameConfig.spin.winDisplayDelayMs);
-      this.audio.play("magic-spell-win");
+      await this.wait(GameConfig.spin.winDisplayDelayMs * 2);
+      this.audio.play("add-to-win");
       await this.view.celebrateWin(this.model.totalWin);
     }
 

@@ -21,10 +21,9 @@ export class LoadingView extends Container {
     "/assets/music/egypt-desert-music-02.mp3",
   ];
   private static readonly SOUND_PATHS = [
-    "/assets/sounds/magic-spell-3.mp3",
-    "/assets/sounds/magic-spell-5.mp3",
-    "/assets/sounds/magic-spell-win.mp3",
-    "/assets/sounds/magic-twinkle.mp3",
+    "/assets/sounds/win-sound.mp3",
+    "/assets/sounds/big-win-sound.mp3",
+    "/assets/sounds/add-to-win.mp3",
   ];
 
   private barWidth = LoadingView.BAR_WIDTH_DESKTOP;

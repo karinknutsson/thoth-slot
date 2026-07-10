@@ -27,6 +27,13 @@ export const cheats: Record<string, string[][]> = {
     ["urn", "thoth", "horus"],
     ["vase", "crookAndFlail", "sphinx"],
   ],
+  middleRow4Horus: [
+    ["anubis", "urn", "urn"],
+    ["horus", "horus", "vase"],
+    ["sphinx", "horus", "anubis"],
+    ["urn", "horus", "horus"],
+    ["vase", "horus", "sphinx"],
+  ],
   bottomRow5Urns: [
     ["vase", "sphinx", "urn"],
     ["scarab", "anubis", "urn"],
