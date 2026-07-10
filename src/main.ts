@@ -5,6 +5,7 @@ import { CheatView } from "./views/CheatView";
 import { AudioView } from "./views/AudioView";
 import { Application } from "pixi.js";
 import { BackendManager } from "./services/BackendManager";
+import { AssetLoader } from "./services/AssetLoader";
 import { paytable } from "./data/paytable-data";
 import { SpinController } from "./controllers/SpinController";
 import { CheatsController } from "./controllers/CheatController";
@@ -36,7 +37,7 @@ async function createApp(): Promise<void> {
     spinButtonBackground: spinButtonBackgroundTexture,
     music,
     sounds,
-  } = await LoadingView.loadAssets(paytable.symbols, (progress) =>
+  } = await AssetLoader.loadGameAssets(paytable.symbols, (progress) =>
     loadingView.setProgress(progress),
   );
 
